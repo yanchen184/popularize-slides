@@ -1,0 +1,1977 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>AI Claude Code 概論初級班 ・ 第一堂</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Noto+Sans+TC:wght@300;400;500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ==================== 設計系統 ==================== */
+  :root {
+    --bg:           #0E0E10;
+    --bg-soft:      #15151A;
+    --line:         #2A2A30;
+    --line-soft:    #1F1F25;
+    --ink:          #F4F0E8;
+    --ink-mute:     #8A8A93;
+    --ink-faint:    #4A4A52;
+    --accent:       #D4A574;   /* 暖金 */
+    --accent-soft:  #B8946A;
+    --warn:         #C97B7B;   /* 暗珊瑚 */
+    --safe:         #7BA88E;   /* 暗薄荷 */
+
+    --serif:  'Cormorant Garamond', 'Noto Serif TC', Georgia, serif;
+    --sans:   'Inter', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono:   'SF Mono', 'JetBrains Mono', Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ==================== 投影片容器 ==================== */
+  .deck {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  .slide {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem 6rem;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .slide.active {
+    display: flex;
+    opacity: 1;
+  }
+
+  .slide.fade-up > * {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .slide.active.fade-up > * {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .slide.active.fade-up > *:nth-child(1) { transition-delay: 0.1s; }
+  .slide.active.fade-up > *:nth-child(2) { transition-delay: 0.3s; }
+  .slide.active.fade-up > *:nth-child(3) { transition-delay: 0.5s; }
+  .slide.active.fade-up > *:nth-child(4) { transition-delay: 0.7s; }
+  .slide.active.fade-up > *:nth-child(5) { transition-delay: 0.9s; }
+
+  /* ==================== 排版元件 ==================== */
+  .eyebrow {
+    font-family: var(--sans);
+    font-size: 0.78rem;
+    font-weight: 400;
+    letter-spacing: 0.4em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+
+  .title-xl {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: 6.5rem;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+
+  .title-l {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: 4.2rem;
+    line-height: 1.15;
+    letter-spacing: -0.005em;
+  }
+
+  .title-m {
+    font-family: var(--sans);
+    font-weight: 300;
+    font-size: 2.8rem;
+    line-height: 1.3;
+    letter-spacing: 0;
+  }
+
+  .title-s {
+    font-family: var(--sans);
+    font-weight: 400;
+    font-size: 1.8rem;
+    line-height: 1.4;
+  }
+
+  .body {
+    font-family: var(--sans);
+    font-weight: 300;
+    font-size: 1.4rem;
+    line-height: 1.75;
+    color: var(--ink-mute);
+    max-width: 60ch;
+  }
+
+  .body-l {
+    font-family: var(--sans);
+    font-weight: 300;
+    font-size: 1.7rem;
+    line-height: 1.7;
+    color: var(--ink);
+  }
+
+  .quote {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: 3rem;
+    line-height: 1.5;
+    color: var(--ink);
+    max-width: 22ch;
+    text-align: center;
+  }
+
+  .label {
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.3em;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+  }
+
+  .num {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: 1rem;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+  }
+
+  .divider {
+    width: 60px;
+    height: 1px;
+    background: var(--accent);
+    margin: 2rem 0;
+  }
+
+  .divider.center { margin: 2rem auto; }
+
+  /* ==================== 頁碼 + 章節指示 ==================== */
+  .pagenum {
+    position: fixed;
+    bottom: 2rem;
+    right: 2.5rem;
+    font-family: var(--serif);
+    font-size: 0.95rem;
+    font-weight: 300;
+    color: var(--ink-faint);
+    letter-spacing: 0.15em;
+    z-index: 100;
+  }
+  .pagenum span:first-child { color: var(--accent); }
+
+  .chapter {
+    position: fixed;
+    bottom: 2rem;
+    left: 2.5rem;
+    font-family: var(--sans);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.4em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    z-index: 100;
+  }
+
+  .progress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 2px;
+    background: var(--accent);
+    transition: width 0.3s ease;
+    z-index: 100;
+  }
+
+  /* ==================== 章節分隔頁 ==================== */
+  .chapter-slide {
+    background: var(--bg-soft);
+    text-align: center;
+  }
+  .chapter-slide .chapter-num {
+    font-family: var(--serif);
+    font-size: 1rem;
+    font-weight: 300;
+    letter-spacing: 0.5em;
+    color: var(--accent);
+    margin-bottom: 2rem;
+  }
+  .chapter-slide .chapter-title {
+    font-family: var(--serif);
+    font-size: 5.5rem;
+    font-weight: 300;
+    line-height: 1.1;
+    color: var(--ink);
+  }
+  .chapter-slide .chapter-sub {
+    margin-top: 2rem;
+    font-family: var(--sans);
+    font-size: 1.2rem;
+    font-weight: 300;
+    color: var(--ink-mute);
+    letter-spacing: 0.05em;
+  }
+
+  /* ==================== 對比表 ==================== */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr;
+    gap: 0;
+    width: 100%;
+    max-width: 1100px;
+    margin-top: 2rem;
+  }
+  .compare > .col {
+    padding: 0 3rem;
+  }
+  .compare > .vline {
+    background: var(--line);
+  }
+  .compare .col-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.4em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+  .compare .col-title {
+    font-family: var(--serif);
+    font-size: 2rem;
+    font-weight: 300;
+    margin-bottom: 1.5rem;
+    color: var(--ink);
+  }
+  .compare .col-body {
+    font-family: var(--sans);
+    font-weight: 300;
+    font-size: 1.2rem;
+    line-height: 1.85;
+    color: var(--ink-mute);
+  }
+  .compare .col.accent .col-title { color: var(--accent); }
+
+  /* ==================== 流程箭頭 ==================== */
+  .flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin: 3rem 0;
+    flex-wrap: wrap;
+  }
+  .flow .step {
+    padding: 1rem 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    font-size: 1.1rem;
+    color: var(--ink);
+    font-weight: 300;
+    background: var(--bg-soft);
+  }
+  .flow .step.accent {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .flow .arrow {
+    color: var(--ink-faint);
+    font-size: 1.2rem;
+  }
+
+  /* ==================== 能力堆疊（Demo 圖示） ==================== */
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-top: 2rem;
+    width: 100%;
+    max-width: 720px;
+  }
+  .stack .layer {
+    display: grid;
+    grid-template-columns: 80px 1fr 1fr;
+    align-items: center;
+    padding: 1.4rem 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .stack .layer:last-child { border-bottom: none; }
+  .stack .layer .demo-num {
+    font-family: var(--serif);
+    font-size: 1.8rem;
+    font-weight: 300;
+    color: var(--ink-faint);
+  }
+  .stack .layer .demo-name {
+    font-family: var(--sans);
+    font-size: 1.3rem;
+    font-weight: 400;
+    color: var(--ink);
+  }
+  .stack .layer .demo-cap {
+    font-family: var(--sans);
+    font-size: 1rem;
+    font-weight: 300;
+    color: var(--ink-mute);
+    text-align: right;
+  }
+  .stack .layer.now .demo-num { color: var(--accent); }
+  .stack .layer.now .demo-name { color: var(--accent); }
+
+  /* ==================== 大引號 ==================== */
+  .grand-quote {
+    position: relative;
+    padding: 4rem 5rem;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    max-width: 900px;
+  }
+  .grand-quote::before {
+    content: '"';
+    position: absolute;
+    top: -1rem;
+    left: -2rem;
+    font-family: var(--serif);
+    font-size: 8rem;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  /* ==================== 三欄資料分級 ==================== */
+  .triple {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+    width: 100%;
+    max-width: 1200px;
+    margin-top: 3rem;
+  }
+  .triple .cell {
+    padding: 2.5rem 2rem;
+    border-right: 1px solid var(--line-soft);
+  }
+  .triple .cell:last-child { border-right: none; }
+  .triple .cell-mark {
+    font-family: var(--serif);
+    font-size: 2.2rem;
+    font-weight: 300;
+    margin-bottom: 1rem;
+  }
+  .triple .cell-mark.ok { color: var(--safe); }
+  .triple .cell-mark.warn { color: var(--accent); }
+  .triple .cell-mark.no { color: var(--warn); }
+  .triple .cell-title {
+    font-family: var(--sans);
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+  }
+  .triple .cell-body {
+    font-family: var(--sans);
+    font-size: 1.05rem;
+    font-weight: 300;
+    line-height: 1.9;
+    color: var(--ink-mute);
+  }
+
+  /* ==================== 權限模式 ==================== */
+  .modes {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line-soft);
+    margin-top: 2rem;
+    width: 100%;
+    max-width: 1200px;
+  }
+  .modes .mode {
+    background: var(--bg);
+    padding: 2rem 1.5rem;
+    text-align: center;
+  }
+  .modes .mode-num {
+    font-family: var(--serif);
+    font-size: 1.2rem;
+    color: var(--ink-faint);
+    margin-bottom: 0.5rem;
+  }
+  .modes .mode-name {
+    font-family: var(--sans);
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+  }
+  .modes .mode-cmd {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    word-break: break-word;
+  }
+  .modes .mode-desc {
+    font-family: var(--sans);
+    font-size: 0.92rem;
+    font-weight: 300;
+    line-height: 1.6;
+    color: var(--ink-mute);
+  }
+
+  /* ==================== 程式碼 inline ==================== */
+  code, .mono {
+    font-family: var(--mono);
+    font-size: 0.95em;
+    background: var(--bg-soft);
+    padding: 0.15em 0.5em;
+    border-radius: 3px;
+    color: var(--accent);
+    border: 1px solid var(--line-soft);
+  }
+
+  pre.snippet {
+    font-family: var(--mono);
+    font-size: 1rem;
+    line-height: 1.7;
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    padding: 1.5rem 2rem;
+    color: var(--ink);
+    border-radius: 0;
+    text-align: left;
+    max-width: 760px;
+    overflow-x: auto;
+  }
+
+  /* ==================== 提示詞展示框（可複製貼上） ==================== */
+  pre.prompt-box {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    line-height: 1.65;
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    padding: 1.2rem 1.6rem;
+    color: var(--ink);
+    border-radius: 0;
+    text-align: left;
+    max-width: 880px;
+    width: 100%;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin: 1rem auto;
+  }
+  .prompt-tag {
+    display: inline-block;
+    font-family: var(--sans);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 0.15rem 0.6rem;
+    margin-bottom: 0.6rem;
+    text-transform: uppercase;
+  }
+  .prompt-cmd {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--ink-mute);
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    padding: 0.3rem 0.7rem;
+    display: inline-block;
+    margin-bottom: 0.6rem;
+  }
+
+  /* ==================== 說 vs 做 卡片 ==================== */
+  .roles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    width: 100%;
+    max-width: 1000px;
+    margin-top: 3rem;
+  }
+  .role {
+    text-align: left;
+    padding: 2rem 0;
+    border-top: 1px solid var(--line);
+  }
+  .role-label {
+    font-size: 0.78rem;
+    letter-spacing: 0.4em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .role-title {
+    font-family: var(--serif);
+    font-size: 2.4rem;
+    font-weight: 300;
+    color: var(--ink);
+    margin-bottom: 1rem;
+  }
+  .role.you .role-title { color: var(--accent); }
+  .role-body {
+    font-family: var(--sans);
+    font-weight: 300;
+    font-size: 1.15rem;
+    line-height: 1.85;
+    color: var(--ink-mute);
+  }
+
+  /* ==================== 工作流程五步 ==================== */
+  .workflow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+    max-width: 800px;
+    margin-top: 2rem;
+  }
+  .workflow .step-row {
+    display: grid;
+    grid-template-columns: 50px 1fr 140px;
+    align-items: center;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .workflow .step-row:last-child { border-bottom: none; }
+  .workflow .step-num {
+    font-family: var(--serif);
+    font-size: 1.5rem;
+    color: var(--accent);
+  }
+  .workflow .step-text {
+    font-family: var(--sans);
+    font-size: 1.2rem;
+    font-weight: 300;
+    color: var(--ink);
+  }
+  .workflow .step-who {
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-align: right;
+  }
+  .workflow .step-who.you { color: var(--accent); }
+  .workflow .step-who.ai  { color: var(--ink-faint); }
+
+  /* ==================== 終曲 ==================== */
+  .finale {
+    background: var(--bg);
+    text-align: center;
+  }
+  .finale .quote {
+    font-size: 3.6rem;
+    line-height: 1.5;
+    max-width: 24ch;
+  }
+  .finale .signoff {
+    margin-top: 4rem;
+    color: var(--ink-faint);
+    font-size: 0.95rem;
+    letter-spacing: 0.3em;
+  }
+
+  /* ==================== 標題頁特殊 ==================== */
+  .title-page {
+    text-align: center;
+  }
+  .title-page .meta-top {
+    position: absolute;
+    top: 4rem;
+    left: 4rem;
+    right: 4rem;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    letter-spacing: 0.4em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+  }
+  .title-page .main {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: 7rem;
+    line-height: 1;
+  }
+  .title-page .sub {
+    margin-top: 2rem;
+    font-family: var(--sans);
+    font-weight: 300;
+    font-size: 1.6rem;
+    color: var(--ink-mute);
+    letter-spacing: 0.05em;
+  }
+  .title-page .meta-bottom {
+    position: absolute;
+    bottom: 4rem;
+    left: 4rem;
+    right: 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-size: 0.78rem;
+    letter-spacing: 0.4em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+  }
+
+  /* ==================== 雙欄 50/50 ==================== */
+  .twocol {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    width: 100%;
+    max-width: 1100px;
+    align-items: center;
+  }
+
+  /* ==================== 三欄對比（產品線） ==================== */
+  .tricol {
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr 1px 1fr;
+    width: 100%;
+    max-width: 1180px;
+    margin-top: 2rem;
+  }
+  .tricol > .vline { background: var(--line); }
+  .tricol > .col { padding: 0 2rem; }
+  .tricol .col-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.4em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-bottom: 1.2rem;
+  }
+  .tricol .col-title {
+    font-family: var(--serif);
+    font-size: 1.8rem;
+    font-weight: 400;
+    margin-bottom: 1rem;
+    color: var(--ink);
+  }
+  .tricol .col-role {
+    font-family: var(--sans);
+    font-size: 0.95rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    margin-bottom: 1.2rem;
+  }
+  .tricol .col-body {
+    font-family: var(--sans);
+    font-weight: 300;
+    font-size: 1.05rem;
+    line-height: 1.85;
+    color: var(--ink-mute);
+  }
+  .tricol .col.accent .col-title { color: var(--accent); }
+
+  /* ==================== 金句頁（0→1） ==================== */
+  .bigfade {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5rem;
+    margin: 3rem 0;
+  }
+  .bigfade .step {
+    font-family: var(--serif);
+    font-weight: 300;
+    line-height: 1;
+    text-align: center;
+  }
+  .bigfade .step.lead {
+    font-size: 11rem;
+    color: var(--accent);
+  }
+  .bigfade .step.tail {
+    font-size: 5.5rem;
+    color: var(--ink-mute);
+  }
+  .bigfade .vsep {
+    width: 1px;
+    height: 8rem;
+    background: var(--accent-soft);
+    opacity: 0.6;
+  }
+
+  /* ==================== 品牌並列（不分高下） ==================== */
+  .brands {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2.5rem;
+    margin: 2.5rem 0;
+    flex-wrap: wrap;
+  }
+  .brands .brand {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: 1.6rem;
+    color: var(--ink-mute);
+    letter-spacing: 0.02em;
+  }
+  .brands .brand.dot {
+    color: var(--ink-faint);
+    font-size: 1rem;
+  }
+
+  /* ==================== Speaker notes（隱藏） ==================== */
+  .notes { display: none; }
+
+  /* ==================== 不會被印到的提示 ==================== */
+  .hint {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.3em;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .hint.show { opacity: 1; }
+
+  @media print {
+    .pagenum, .chapter, .progress, .hint { display: none; }
+    .slide { display: flex !important; opacity: 1 !important; page-break-after: always; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<div class="chapter" id="chapter"></div>
+<div class="pagenum"><span id="pn">01</span> &nbsp;/&nbsp; <span id="pt">28</span></div>
+<div class="hint" id="hint">← →  切換　・　F  全螢幕　・　Home  回首頁</div>
+
+<div class="deck" id="deck">
+
+  <!-- ============================================== -->
+  <!-- 起：標題 + 信任建立                              -->
+  <!-- ============================================== -->
+
+  <!-- S1 — 標題頁 -->
+  <section class="slide title-page fade-up" data-chapter="">
+    <div class="meta-top">
+      <span>YC Studio</span>
+      <span>2026</span>
+    </div>
+    <div class="main">Claude&nbsp;Code</div>
+    <div class="sub">概論初級班 ・ 第一堂　／　共四堂</div>
+    <div class="meta-bottom">
+      <span>從會用 AI 聊天　到讓 AI 幫你做事</span>
+      <span>YC</span>
+    </div>
+  </section>
+
+  <!-- S1.1 — 上課前 ・ 如何安裝（總覽） -->
+  <section class="slide fade-up" data-chapter="">
+    <div class="eyebrow">上課前　・　先把工具裝好</div>
+    <div class="title-m" style="margin-bottom:1.5rem">兩件事 ── <span style="color:var(--accent)">Git</span> ＋ <span style="color:var(--accent)">Claude Code</span>。</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;max-width:62rem;margin-top:1rem;text-align:left">
+      <div>
+        <div class="prompt-tag" style="border-color:var(--ink);color:var(--ink)">先裝　・　Git</div>
+        <div class="body" style="font-size:1rem;color:var(--ink-mute);margin-bottom:0.6rem">版本控制工具 ── Claude Code 內部會用到它。</div>
+        <div class="body" style="font-size:0.95rem">
+          <span style="color:var(--accent)">macOS：</span>內建，不用裝。<br>
+          <span style="color:var(--accent)">Windows：</span>下載 Git for Windows<br>
+          <code style="font-family:var(--mono);font-size:0.85rem;color:var(--ink-mute)">git-scm.com/downloads/win</code>
+        </div>
+      </div>
+      <div>
+        <div class="prompt-tag">後裝　・　Claude Code</div>
+        <div class="body" style="font-size:1rem;color:var(--ink-mute);margin-bottom:0.6rem">官方原生安裝器 ── 一行指令搞定，自動更新。</div>
+        <div class="body" style="font-size:0.95rem">
+          需要 <span style="color:var(--accent)">Pro / Max / Team / Enterprise</span> 帳號。<br>
+          免費 Claude.ai 不能用。<br>
+          <span style="color:var(--ink-mute)">系統需求：4GB RAM、能上網。</span>
+        </div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="body" style="font-size:1rem">
+      下兩頁 ── <span style="color:var(--accent)">macOS</span> 和 <span style="color:var(--accent)">Windows</span> 的具體指令。
+    </div>
+  </section>
+
+  <!-- S1.15 — 什麼是 Git？ -->
+  <section class="slide fade-up" data-chapter="">
+    <div class="eyebrow">先補一下　・　什麼是 Git？</div>
+    <div class="title-m" style="margin-bottom:1.5rem">一句話 ── <span style="color:var(--accent)">幫程式檔案做「時光機 + 雲端備份」</span>。</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;max-width:62rem;margin-top:1rem;text-align:left">
+      <div>
+        <div class="prompt-tag" style="border-color:var(--ink);color:var(--ink)">它在做什麼</div>
+        <div class="body" style="font-size:0.95rem;margin-top:0.5rem;line-height:1.6">
+          <span style="color:var(--accent)">記錄每次修改</span> ── 改錯能退回。<br>
+          <span style="color:var(--accent)">多人協作</span> ── 兩個人同時改不會撞。<br>
+          <span style="color:var(--accent)">同步到 GitHub</span> ── 雲端備份 + 分享。
+        </div>
+      </div>
+      <div>
+        <div class="prompt-tag">為什麼今天要裝它</div>
+        <div class="body" style="font-size:0.95rem;margin-top:0.5rem;line-height:1.6">
+          Claude Code <span style="color:var(--accent)">內部會用 Git</span> ──<br>
+          幫你存每次改動、避免改壞檔案。<br>
+          <span style="color:var(--ink-mute)">你不用會用,但電腦得有它。</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="body" style="font-size:1rem">
+      <span style="color:var(--accent)">macOS</span> 內建,免裝　・　<span style="color:var(--accent)">Windows</span> 要先裝 Git for Windows。<br>
+      <span style="color:var(--ink-mute);font-size:0.95rem">不需要懂指令 ── 只要安裝在那就好,Claude Code 會自己用。</span>
+    </div>
+  </section>
+
+  <!-- S1.2 — 安裝 macOS -->
+  <section class="slide fade-up" data-chapter="">
+    <div class="eyebrow">macOS　・　安裝</div>
+    <div class="title-m" style="margin-bottom:1.5rem">打開 <span style="color:var(--accent)">終端機</span>（Terminal），貼一行就好。</div>
+
+    <div style="text-align:left;max-width:60rem;width:100%">
+      <div class="prompt-tag" style="margin-top:0.5rem">推薦　・　官方原生安裝器</div>
+      <pre class="prompt-box">curl -fsSL https://claude.ai/install.sh | bash</pre>
+      <div class="body" style="font-size:0.9rem;color:var(--ink-faint);margin-top:0.3rem">
+        裝完會自動在背景更新到最新版。
+      </div>
+
+      <div class="prompt-tag" style="margin-top:1.2rem;border-color:var(--ink-mute);color:var(--ink-mute)">替代　・　用 Homebrew</div>
+      <pre class="prompt-box" style="border-left-color:var(--ink-mute)">brew install --cask claude-code</pre>
+    </div>
+
+    <div class="divider"></div>
+    <div class="body" style="font-size:1rem">
+      裝完輸入 <code style="font-family:var(--mono);color:var(--accent)">claude</code> 就能進入。<br>
+      <span style="color:var(--ink-mute);font-size:0.95rem">第一次會跳出登入流程，用瀏覽器登入 Pro 帳號即可。</span>
+    </div>
+  </section>
+
+  <!-- S1.3 — 安裝 Windows -->
+  <section class="slide fade-up" data-chapter="">
+    <div class="eyebrow">Windows　・　安裝</div>
+    <div class="title-m" style="margin-bottom:1rem">先裝 <span style="color:var(--accent)">Git for Windows</span>，再裝 Claude Code。</div>
+
+    <div style="text-align:left;max-width:60rem;width:100%">
+      <div class="prompt-tag" style="margin-top:0.3rem;border-color:var(--ink);color:var(--ink)">第一步　・　Git for Windows</div>
+      <div class="body" style="font-size:0.95rem;margin:0.4rem 0">
+        到 <code style="font-family:var(--mono);color:var(--accent)">git-scm.com/downloads/win</code> 下載 → 一路 Next 裝完。
+      </div>
+
+      <div class="prompt-tag" style="margin-top:1rem">第二步　・　PowerShell（推薦）</div>
+      <pre class="prompt-box">irm https://claude.ai/install.ps1 | iex</pre>
+
+      <div class="prompt-tag" style="margin-top:0.8rem;border-color:var(--ink-mute);color:var(--ink-mute)">替代　・　WinGet</div>
+      <pre class="prompt-box" style="border-left-color:var(--ink-mute)">winget install Anthropic.ClaudeCode</pre>
+    </div>
+
+    <div class="divider"></div>
+    <div class="body" style="font-size:0.95rem">
+      <span style="color:var(--ink-mute)">分不清 PowerShell 和 CMD？看提示符 ──<br>
+      <code style="font-family:var(--mono)">PS C:\</code> 是 PowerShell；<code style="font-family:var(--mono)">C:\</code> 是 CMD。</span>
+    </div>
+  </section>
+
+  <!-- S1.4 — 驗證安裝 -->
+  <section class="slide fade-up" data-chapter="">
+    <div class="eyebrow">驗證</div>
+    <div class="title-m" style="margin-bottom:1.5rem">確認裝好了，再開始上課。</div>
+
+    <div style="text-align:left;max-width:60rem;width:100%">
+      <div class="prompt-tag" style="border-color:var(--ink);color:var(--ink)">看版本</div>
+      <pre class="prompt-box">claude --version</pre>
+
+      <div class="prompt-tag" style="margin-top:1rem;border-color:var(--ink);color:var(--ink)">完整健檢</div>
+      <pre class="prompt-box">claude doctor</pre>
+
+      <div class="prompt-tag" style="margin-top:1rem">啟動</div>
+      <pre class="prompt-box">claude</pre>
+    </div>
+
+    <div class="divider"></div>
+    <div class="body" style="font-size:1rem">
+      看到 Claude Code 的歡迎畫面 ── 你準備好了。
+    </div>
+  </section>
+
+  <!-- S2 — 你已經很棒 -->
+  <section class="slide fade-up" data-chapter="起">
+    <div class="eyebrow">先說一件事</div>
+    <div class="title-l">你已經在用 AI 了。<br>這件事本身就是領先。</div>
+    <div class="divider"></div>
+    <div class="body">
+      願意開始嘗試，<br>
+      就是踏出最重要的那一步。
+    </div>
+  </section>
+
+  <!-- S3 — 想開這場交流會的原因 -->
+  <section class="slide fade-up" data-chapter="起">
+    <div class="eyebrow">想開這場交流會的原因</div>
+    <div class="title-l" style="max-width:22ch">我看到一個落差。</div>
+    <div class="divider"></div>
+    <div class="body" style="max-width:34ch">
+      大家會問 AI：<span style="color:var(--ink-mute)">「幫我寫一段文字」</span>。<br>
+      但很少人會說：<span style="color:var(--accent)">「幫我把這份資料整理好，<br>分類存到對應的資料夾。」</span>
+    </div>
+    <div class="body" style="margin-top:1.6rem;color:var(--ink-faint);max-width:34ch">
+      不是難 ── 是還沒有人陪大家走過第一次。
+    </div>
+  </section>
+
+  <!-- S4 — 為什麼是我來分享 -->
+  <section class="slide fade-up" data-chapter="起">
+    <div class="eyebrow">為什麼是我來分享</div>
+    <div class="title-m" style="max-width:22ch">
+      我不是 AI 老師，<br>
+      我是<span style="color:var(--accent)">同行人</span>。
+    </div>
+    <div class="divider"></div>
+    <div class="body" style="max-width:32ch;text-align:left">
+      只是比大家早走過那段最卡的：<br>
+      　第一次把它裝到電腦上、<br>
+      　第一次成功讓它幫我做事、<br>
+      　第一次出錯、然後找到原因。
+    </div>
+    <div class="body" style="margin-top:1.6rem;color:var(--ink-faint);max-width:32ch">
+      把這段路講給大家聽，少走一些彎路。
+    </div>
+  </section>
+
+  <!-- S5 — 0 → 1 金句頁 -->
+  <section class="slide fade-up" data-chapter="起">
+    <div class="eyebrow">一句話</div>
+    <div class="bigfade">
+      <div class="step lead">0 → 1</div>
+      <div class="vsep"></div>
+      <div class="step tail">1 → 100</div>
+    </div>
+    <div class="title-s" style="margin-top:1.5rem;color:var(--ink);max-width:32ch">
+      這場交流會 ── <span style="color:var(--accent)">我陪大家走那段「0 → 1」</span>。
+    </div>
+    <div class="body" style="margin-top:1rem;color:var(--ink-faint);max-width:32ch">
+      最難的是踏出第一步。一旦跨過去，後面就順了。
+    </div>
+  </section>
+
+  <!-- S6 — 現在很多 AI 都很好用 -->
+  <section class="slide fade-up" data-chapter="起">
+    <div class="eyebrow">先講一下背景</div>
+    <div class="title-m" style="max-width:24ch">現在很多 AI 都很好用。</div>
+    <div class="brands">
+      <span class="brand">ChatGPT</span>
+      <span class="brand dot">・</span>
+      <span class="brand">Gemini</span>
+      <span class="brand dot">・</span>
+      <span class="brand">Claude</span>
+      <span class="brand dot">・</span>
+      <span class="brand">Perplexity</span>
+    </div>
+    <div class="body" style="color:var(--ink-mute);max-width:32ch">
+      每一個都做得很好，各有擅長的地方。<br>
+      今天，想跟大家聊聊其中一個 ── <br>
+      <span style="color:var(--ink-faint)">純粹分享我自己的經驗。</span>
+    </div>
+  </section>
+
+  <!-- S7 — 今天想聊的是 Claude -->
+  <section class="slide fade-up" data-chapter="起">
+    <div class="eyebrow">今天想聊的</div>
+    <div class="title-l" style="color:var(--accent);font-size:6rem">Claude</div>
+    <div class="divider"></div>
+    <div class="body" style="max-width:28ch">
+      我自己用得最順手的一個。<br>
+      特別是「動腦＋動手做事」這條路，<br>
+      它走得很穩。
+    </div>
+  </section>
+
+  <!-- S8 — Claude 三種使用方式（關鍵頁） -->
+  <section class="slide fade-up" data-chapter="起">
+    <div class="eyebrow">Claude 有三種使用方式</div>
+    <div class="title-m" style="margin-bottom:2rem">同一個 AI，三種使用方式。</div>
+    <div class="tricol">
+      <div class="col">
+        <div class="col-label">使用方式 一</div>
+        <div class="col-title">Claude.ai</div>
+        <div class="col-role">像顧問</div>
+        <div class="col-body">
+          打開網頁就能用。<br>
+          你問它答 ──<br>
+          想點子、寫文章、問問題。
+        </div>
+      </div>
+      <div class="vline"></div>
+      <div class="col">
+        <div class="col-label">使用方式 二</div>
+        <div class="col-title">Claude Cowork</div>
+        <div class="col-role">像助理</div>
+        <div class="col-body">
+          裝在電腦上的應用程式。<br>
+          給目標 ──<br>
+          幫你跨檔案、跨工具完成事情。
+        </div>
+      </div>
+      <div class="vline"></div>
+      <div class="col accent">
+        <div class="col-label">使用方式 三　・　今天</div>
+        <div class="col-title">Claude Code</div>
+        <div class="col-role">像得力助手</div>
+        <div class="col-body">
+          在電腦的指令視窗裡用。<br>
+          它能直接動手 ──<br>
+          讀檔案、查資料、寫網站、上線。
+        </div>
+      </div>
+    </div>
+    <div class="body" style="margin-top:2rem;font-size:0.95rem;color:var(--ink-faint)">
+      同一個 AI　・　差別在「在哪裡用、能碰到什麼」。
+    </div>
+  </section>
+
+  <!-- S9 — 為什麼今天聊 Claude Code -->
+  <section class="slide fade-up" data-chapter="起">
+    <div class="eyebrow">為什麼今天聊這個</div>
+    <div class="title-l" style="color:var(--accent)">Claude Code</div>
+    <div class="divider"></div>
+    <div class="body" style="max-width:34ch">
+      因為今天我們要做的事比較<span style="color:var(--ink)">「動手」</span>──<br>
+      整理檔案、查資料、做一個網頁給別人用。<br>
+      這條路 Claude Code 走得最順。
+    </div>
+    <div class="body" style="margin-top:1.6rem;color:var(--ink-faint);max-width:34ch">
+      不是哪個比較好 ── 是場景不同。
+    </div>
+  </section>
+
+  <!-- S10 — 這場交流會的承諾 -->
+  <section class="slide fade-up" data-chapter="起">
+    <div class="eyebrow">這場交流會的承諾</div>
+    <div class="twocol" style="margin-top:2rem">
+      <div>
+        <div class="num">01</div>
+        <div class="title-s" style="margin-top:0.5rem">真的會用</div>
+        <div class="body" style="margin-top:1rem">
+          不只是「聽過 Claude Code」，<br>
+          是真的「用它做完一件事」。
+        </div>
+      </div>
+      <div>
+        <div class="num">02</div>
+        <div class="title-s" style="margin-top:0.5rem">建立邊界感</div>
+        <div class="body" style="margin-top:1rem">
+          知道什麼能信任 AI、<br>
+          什麼自己要把關。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S10.5 — 四堂課，一條曲線 -->
+  <section class="slide fade-up" data-chapter="起">
+    <div class="eyebrow">四堂課，一條曲線</div>
+    <div class="title-m" style="margin-bottom:2rem">這四堂課<span style="color:var(--accent)">不是四個獨立單元</span>，<br>是一條完整的曲線。</div>
+
+    <div style="display:grid;grid-template-columns:auto auto 1fr;gap:1rem 1.6rem;max-width:50rem;align-items:center;font-family:'Noto Sans TC',sans-serif">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--ink-faint);letter-spacing:0.08em">第一堂</div>
+      <div style="font-size:1.5rem;color:var(--accent);font-weight:500;letter-spacing:0.15em">看見</div>
+      <div style="font-size:0.95rem;color:var(--ink);line-height:1.6">AI 從聊天變成做事</div>
+
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--ink-faint);letter-spacing:0.08em">第二堂</div>
+      <div style="font-size:1.5rem;color:var(--accent);font-weight:500;letter-spacing:0.15em">馴服</div>
+      <div style="font-size:0.95rem;color:var(--ink);line-height:1.6">AI 開始記得你</div>
+
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--ink-faint);letter-spacing:0.08em">第三堂</div>
+      <div style="font-size:1.5rem;color:var(--accent);font-weight:500;letter-spacing:0.15em">變身</div>
+      <div style="font-size:0.95rem;color:var(--ink);line-height:1.6">把自己變成「有專屬工具的人」</div>
+
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--ink-faint);letter-spacing:0.08em">第四堂</div>
+      <div style="font-size:1.5rem;color:var(--accent);font-weight:500;letter-spacing:0.15em">放心</div>
+      <div style="font-size:0.95rem;color:var(--ink);line-height:1.6">試錯有恃無恐</div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="body" style="max-width:38ch;font-size:1rem">
+      走完這條線 ── 你不只是「會用 AI 的人」，<br>
+      你是 <span style="color:var(--accent)">有工具的人</span>。
+    </div>
+  </section>
+
+  <!-- S5 — 兩層能力 -->
+  <section class="slide fade-up" data-chapter="起">
+    <div class="eyebrow">AI 的兩層能力</div>
+    <div class="title-m" style="margin-bottom:3rem">兩層都好用，<br>解決的問題不一樣。</div>
+    <div class="compare">
+      <div class="col">
+        <div class="col-label">第一層　已解鎖</div>
+        <div class="col-title">諮詢顧問</div>
+        <div class="col-body">你問，它答。<br>執行，你來。</div>
+      </div>
+      <div class="vline"></div>
+      <div class="col accent">
+        <div class="col-label">第二層　今天解鎖</div>
+        <div class="col-title">代理人</div>
+        <div class="col-body">你說目標，<br>事情就做完了。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S12 — 今天的時間軸 -->
+  <section class="slide fade-up" data-chapter="起">
+    <div class="eyebrow">今天的節奏</div>
+    <div class="title-m" style="margin-bottom:1rem">四個 Demo，<br>一層比一層多一點能力。</div>
+    <div class="stack">
+      <div class="layer">
+        <div class="demo-num">01</div>
+        <div class="demo-name">讀寫檔案</div>
+        <div class="demo-cap">不用複製貼上</div>
+      </div>
+      <div class="layer">
+        <div class="demo-num">02</div>
+        <div class="demo-name">整理雜亂資料夾</div>
+        <div class="demo-cap">＋ AI 自己判斷</div>
+      </div>
+      <div class="layer">
+        <div class="demo-num">03</div>
+        <div class="demo-name">操作資料庫</div>
+        <div class="demo-cap">＋ 連動會「記住」的系統</div>
+      </div>
+      <div class="layer">
+        <div class="demo-num">04</div>
+        <div class="demo-name">從零做一個網站給別人用</div>
+        <div class="demo-cap">＋ 跨工具自動化</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- 承一：Demo 1                                    -->
+  <!-- ============================================== -->
+
+  <!-- S7 — 章節 Demo 1 -->
+  <section class="slide chapter-slide fade-up" data-chapter="承">
+    <div class="chapter-num">CHAPTER 　 ONE</div>
+    <div class="chapter-title">Demo 1<br><em style="font-style:italic;color:var(--accent);font-size:0.55em">讀寫檔案</em></div>
+    <div class="chapter-sub">AI 自己讀、自己改，你不用複製貼上。</div>
+  </section>
+
+  <!-- S8 — Demo 1 場景 -->
+  <section class="slide fade-up" data-chapter="承　Demo 1">
+    <div class="eyebrow">情境</div>
+    <div class="title-l" style="max-width:18ch">一份客戶 CSV，<br>要做四件事。</div>
+    <div class="divider"></div>
+    <div class="body-l" style="text-align:left;max-width:28ch">
+      讀取 ・ 新增 ・ 修改 ・ 刪除
+    </div>
+    <div class="body" style="margin-top:1.5rem">
+      對話式 AI：你跑 8 次來回。<br>
+      Claude Code：你說一句話。
+    </div>
+  </section>
+
+  <!-- S9 — Demo 1 動作（現場） -->
+  <section class="slide fade-up" data-chapter="承　Demo 1">
+    <div class="label">　現　場　操　作　</div>
+    <div class="quote" style="margin-top:1.5rem;max-width:28ch;font-size:1.8rem">
+      讀 CSV ・ 新增 ・ 改 ・ 刪。
+    </div>
+    <div class="prompt-cmd" style="margin-top:1.2rem">cd ~/demo-csv && claude</div>
+    <div class="prompt-tag">提示詞　・　可直接複製</div>
+    <pre class="prompt-box">這個資料夾裡有一份客戶名單 customers.csv，請幫我做四件事：
+
+1. 讀取它，告訴我有幾筆資料、有哪些欄位
+2. 新增一筆：王小明，email wang@example.com，電話 0912345678
+3. 把陳大華的 email 改成 chen.dahua@example.com
+4. 刪除狀態為「黑名單」的那一筆
+
+做完後告訴我每一步改了什麼。</pre>
+  </section>
+
+  <!-- S10 — Demo 1 收斂 -->
+  <section class="slide fade-up" data-chapter="承　Demo 1">
+    <div class="eyebrow">第一個觀念</div>
+    <div class="title-m" style="max-width:22ch;margin-bottom:1rem">
+      AI 沒有做最重要的那一步 ——
+    </div>
+    <div class="title-l" style="color:var(--accent)">決定要做什麼。</div>
+    <div class="body" style="margin-top:2.5rem">
+      你說目標。AI 執行。<br>
+      這個分工，會在後面三個 Demo 越來越清楚。
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- 承二：Demo 2                                    -->
+  <!-- ============================================== -->
+
+  <!-- S11 — 章節 Demo 2 -->
+  <section class="slide chapter-slide fade-up" data-chapter="承">
+    <div class="chapter-num">CHAPTER 　 TWO</div>
+    <div class="chapter-title">Demo 2<br><em style="font-style:italic;color:var(--accent);font-size:0.55em">雜亂資料夾整理</em></div>
+    <div class="chapter-sub">給目標，AI 自己拆成步驟。</div>
+  </section>
+
+  <!-- S12 — 從一對一到一對多 -->
+  <section class="slide fade-up" data-chapter="承　Demo 2">
+    <div class="eyebrow">能力升級</div>
+    <div class="compare">
+      <div class="col">
+        <div class="col-label">Demo 1</div>
+        <div class="col-title">一對一</div>
+        <div class="col-body">你說 4 件事，<br>AI 做 4 件事。</div>
+      </div>
+      <div class="vline"></div>
+      <div class="col accent">
+        <div class="col-label">Demo 2</div>
+        <div class="col-title">一對多</div>
+        <div class="col-body">你說 1 件事，<br>AI 自己拆成好幾步。</div>
+      </div>
+    </div>
+    <div class="body" style="margin-top:3rem;text-align:center">
+      多了一層：AI 自己決定要做什麼步驟。
+    </div>
+  </section>
+
+  <!-- S13 — Demo 2 場景 -->
+  <section class="slide fade-up" data-chapter="承　Demo 2">
+    <div class="eyebrow">情境</div>
+    <div class="title-l" style="max-width:20ch">你電腦裡，<br>那個亂掉的資料夾。</div>
+    <div class="divider"></div>
+    <div class="body" style="max-width:36ch">
+      docx、jpg、csv、tmp ── 全部混在一起。<br>
+      還有一份叫「密碼備忘.txt」的東西。
+    </div>
+  </section>
+
+  <!-- S14 — 現場操作 -->
+  <section class="slide fade-up" data-chapter="承　Demo 2">
+    <div class="label">　現　場　操　作　</div>
+    <div class="quote" style="margin-top:1rem;max-width:30ch;font-size:1.7rem">
+      不是「整理一下」。<br>
+      是給目標 ＋ 給五條邊界。
+    </div>
+    <div class="prompt-cmd" style="margin-top:1rem">cd ~/demo-messy-folder && claude</div>
+    <div class="prompt-tag">提示詞　・　可直接複製</div>
+    <pre class="prompt-box">請幫我看看目前這個資料夾裡有哪些檔案，然後幫我整理：
+
+1. 先告訴我你看到了什麼
+2. 依照檔案類型建立子資料夾分類整理
+3. 重複的檔案幫我標記出來但不要刪除
+4. 暫存檔移到「待清理」資料夾
+5. 如果有敏感資料，請警告我</pre>
+  </section>
+
+  <!-- S15 — Demo 2 收斂 -->
+  <section class="slide fade-up" data-chapter="承　Demo 2">
+    <div class="eyebrow">第二個觀念</div>
+    <div class="title-l" style="max-width:18ch;line-height:1.25">
+      好 Prompt =<br>
+      <span style="color:var(--accent)">給目標 ＋ 給邊界</span>。
+    </div>
+    <div class="divider"></div>
+    <div class="body" style="max-width:42ch">
+      你不會跟新進員工說「整理一下」就走人。<br>
+      對 AI 也一樣。
+    </div>
+  </section>
+
+  <!-- S15.5 — 三種工程的演進 -->
+  <section class="slide fade-up" data-chapter="承　觀念橋接">
+    <div class="eyebrow">⭐ 觀念橋接</div>
+    <div class="title-m" style="margin-bottom:2rem">你剛剛做的事 ──<br>剛好走過了業界這幾年的<span style="color:var(--accent)">演進三階段</span>。</div>
+
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:1.4rem 1.8rem;max-width:54rem;align-items:start;font-family:'Noto Sans TC',sans-serif">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--accent);letter-spacing:0.08em">①</div>
+      <div>
+        <div style="font-size:1.2rem;color:var(--accent);font-weight:500;letter-spacing:0.03em">Prompt Engineering</div>
+        <div style="font-size:0.95rem;color:var(--ink);margin-top:0.3rem;line-height:1.6">把「那一句話」寫好 ── 目標 ＋ 邊界 ＋ 節奏<br><span style="color:var(--accent);opacity:0.85">← 你 Demo 2 寫的就是這個</span></div>
+      </div>
+
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--accent);letter-spacing:0.08em">②</div>
+      <div>
+        <div style="font-size:1.2rem;color:var(--accent);font-weight:500;letter-spacing:0.03em">Context Engineering</div>
+        <div style="font-size:0.95rem;color:var(--ink);margin-top:0.3rem;line-height:1.6">把「AI 看到的世界」整理好 ── 什麼檔、什麼順序、什麼背景<br><span style="color:var(--accent);opacity:0.85">← 第二堂 CLAUDE.md ＋ Auto memory</span></div>
+      </div>
+
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--accent);letter-spacing:0.08em">③</div>
+      <div>
+        <div style="font-size:1.2rem;color:var(--accent);font-weight:500;letter-spacing:0.03em">Agent Engineering</div>
+        <div style="font-size:0.95rem;color:var(--ink);margin-top:0.3rem;line-height:1.6">讓 AI 自己派工、自己決定下一步 ── 多步驟、會用工具<br><span style="color:var(--accent);opacity:0.85">← 第三堂 Skill / Subagent、第四堂 Auto Mode</span></div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="body" style="max-width:42ch;font-size:1rem">
+      這堂課 → 下一堂 → 下下一堂 ── <span style="color:var(--accent)">一條線</span>。
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- 承三：Demo 3                                    -->
+  <!-- ============================================== -->
+
+  <!-- S16 — 章節 Demo 3 -->
+  <section class="slide chapter-slide fade-up" data-chapter="承">
+    <div class="chapter-num">CHAPTER 　 THREE</div>
+    <div class="chapter-title">Demo 3<br><em style="font-style:italic;color:var(--accent);font-size:0.55em">操作資料庫</em></div>
+    <div class="chapter-sub">連動「有狀態的系統」。</div>
+  </section>
+
+  <!-- S17 — 從靜態到有狀態 -->
+  <section class="slide fade-up" data-chapter="承　Demo 3">
+    <div class="eyebrow">能力升級</div>
+    <div class="title-m" style="margin-bottom:2.5rem">前兩個 Demo 動的是檔案。<br>這個 Demo 動的是<span style="color:var(--accent)">會記住的系統</span>。</div>
+    <div class="body" style="max-width:42ch">
+      檔案改錯了，重存就好。<br>
+      資料庫改錯了，可能影響其他東西。<br>
+      <span style="color:var(--ink)">→ 所以更需要先講清楚、做完要驗收。</span>
+    </div>
+  </section>
+
+  <!-- S18 — 兩種人都帶得走 -->
+  <section class="slide fade-up" data-chapter="承　Demo 3">
+    <div class="eyebrow">不管你會不會 SQL</div>
+    <div class="compare" style="margin-top:1rem">
+      <div class="col">
+        <div class="col-label">不會 SQL 的</div>
+        <div class="col-title">少了門檻</div>
+        <div class="col-body">
+          能不能查資料庫，<br>
+          跟你會不會 SQL 沒關係了。<br>
+          你說清楚要什麼，AI 寫並執行。
+        </div>
+      </div>
+      <div class="vline"></div>
+      <div class="col accent">
+        <div class="col-label">會 SQL 的</div>
+        <div class="col-title">多了放大器</div>
+        <div class="col-body">
+          連 DB → 寫 query → 跑 →<br>
+          解讀 → 報表，五步合成一句。<br>
+          你的時間留給更值得思考的事。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S19 — Demo 3 場景 -->
+  <section class="slide fade-up" data-chapter="承　Demo 3">
+    <div class="eyebrow">情境　・　一家小型線上商店</div>
+    <div class="title-l" style="margin-bottom:2rem;font-size:3rem">一個資料庫 ・ 47 筆資料</div>
+    <div class="stack" style="max-width:560px">
+      <div class="layer">
+        <div class="demo-num">　</div>
+        <div class="demo-name">商品</div>
+        <div class="demo-cap">12 筆 ・ 含庫存、售價</div>
+      </div>
+      <div class="layer">
+        <div class="demo-num">　</div>
+        <div class="demo-name">客戶</div>
+        <div class="demo-cap">10 位 ・ 3 位 VIP</div>
+      </div>
+      <div class="layer">
+        <div class="demo-num">　</div>
+        <div class="demo-name">訂單</div>
+        <div class="demo-cap">25 筆 ・ 4 種狀態</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S20 — Demo 3 四步 -->
+  <section class="slide fade-up" data-chapter="承　Demo 3">
+    <div class="eyebrow">現場操作　・　四步</div>
+    <div class="workflow" style="max-width:680px;margin-top:1.5rem">
+      <div class="step-row">
+        <div class="step-num">①</div>
+        <div class="step-text">探索 ── 資料庫裡有什麼？</div>
+        <div class="step-who ai">AI 自己看</div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">②</div>
+        <div class="step-text">業務問題 ── 四月營運狀況</div>
+        <div class="step-who ai">AI 自己查</div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">③</div>
+        <div class="step-text">主動發現 ── 庫存有什麼問題</div>
+        <div class="step-who ai">AI 找 + 提建議</div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">④</div>
+        <div class="step-text">產出 ── 存成一份報表</div>
+        <div class="step-who ai">AI 寫檔</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S20.5 — Demo 3 提示詞 -->
+  <section class="slide fade-up" data-chapter="承　Demo 3">
+    <div class="eyebrow">Demo 3　・　提示詞</div>
+    <div class="prompt-cmd" style="margin-top:0.8rem">cd ~/demo-db && claude</div>
+    <div class="prompt-tag">四步合成一段，可直接複製</div>
+    <pre class="prompt-box">這個資料夾裡有一個 SQLite 資料庫 store.db，請幫我做四件事：
+
+1. 先看看資料庫裡有哪些表、各自幾筆資料
+2. 給我四月份每個商品類別的營收排行（從高到低）
+3. 主動檢查有沒有「已售完但仍有未出貨訂單」的商品，並建議怎麼處理
+4. 把上面三步的結果整理成一份 markdown 報表，存成 report-april.md
+
+每一步做完先告訴我結果，再進行下一步。</pre>
+  </section>
+
+  <!-- S21 — Demo 3 收斂 -->
+  <section class="slide fade-up" data-chapter="承　Demo 3">
+    <div class="eyebrow">第三個觀念</div>
+    <div class="title-l" style="max-width:18ch;line-height:1.2">
+      AI 是<span style="color:var(--accent)">放大器</span>，<br>
+      不是取代品。
+    </div>
+    <div class="divider"></div>
+    <div class="body" style="max-width:42ch">
+      AI 會不會取代你 ── 取決於你怎麼用 AI。<br>
+      當搬運工，會。<br>
+      當判斷者，AI 把你變得更快。
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- 承四：Demo 4 啟動 + 轉（Spec 思維）              -->
+  <!-- ============================================== -->
+
+  <!-- S22 — 章節 Demo 4 -->
+  <section class="slide chapter-slide fade-up" data-chapter="承">
+    <div class="chapter-num">CHAPTER 　 FOUR</div>
+    <div class="chapter-title">Demo 4<br><em style="font-style:italic;color:var(--accent);font-size:0.55em">從零建網站並部署</em></div>
+    <div class="chapter-sub">跨工具自動化　・　背景跑，邊跑邊講課。</div>
+  </section>
+
+  <!-- S23 — Demo 4 啟動 -->
+  <section class="slide fade-up" data-chapter="承　Demo 4">
+    <div class="label">　啟　動　</div>
+    <div class="title-m" style="margin-top:1.5rem;max-width:30ch;font-size:1.7rem">
+      貼一段 Prompt，然後我們繼續上課。
+    </div>
+    <div class="flow" style="margin-top:1.2rem">
+      <div class="step">npm</div>
+      <div class="arrow">→</div>
+      <div class="step">寫程式</div>
+      <div class="arrow">→</div>
+      <div class="step">git</div>
+      <div class="arrow">→</div>
+      <div class="step">GitHub</div>
+      <div class="arrow">→</div>
+      <div class="step accent">部署</div>
+    </div>
+  </section>
+
+  <!-- S23.5 — Demo 4 提示詞 -->
+  <section class="slide fade-up" data-chapter="承　Demo 4">
+    <div class="eyebrow">Demo 4　・　提示詞</div>
+    <div class="prompt-cmd" style="margin-top:0.6rem">cd ~/workspace && claude</div>
+    <div class="prompt-tag">完整規格，可直接複製</div>
+    <pre class="prompt-box">幫我從零開始建立一個個人形象網站，然後部署到 GitHub Pages 拿到一個可分享的 URL。
+
+要求：
+- 用 Vite + React + TypeScript + Tailwind CSS
+- 專案名稱：demo-site
+- 頁面內容：
+  ・Hero：大標題「AI 概論初級班」，副標「用 AI 工具提升每個人的工作效率」
+  ・關於：介紹這是一堂讓公司每個人都能用 AI 工具的課
+  ・四個亮點卡片：「安裝即上手」「Prompt 設計」「AI 記憶系統」「資安意識」
+  ・Footer：「Powered by Claude Code — 從零到上線只花了 10 分鐘」
+- 風格：深色背景、漸層、現代感、有動畫
+- 部署到 GitHub Pages，repo 名稱 demo-site
+- 設好 GitHub Actions 自動部署
+- 完成後給我 URL</pre>
+    <div class="body" style="margin-top:0.8rem;font-size:0.9rem;color:var(--ink-faint)">
+      → 貼完讓它跑，回來上課。Demo 結尾再回來看 URL。
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- 轉：Spec 思維 + 最重要的一句                      -->
+  <!-- ============================================== -->
+
+  <!-- S24 — 章節 轉 -->
+  <section class="slide chapter-slide fade-up" data-chapter="轉">
+    <div class="chapter-num">INTERLUDE</div>
+    <div class="chapter-title">你才是<br>建築師。</div>
+    <div class="chapter-sub">趁 Demo 4 在跑，把最重要的觀念講清楚。</div>
+  </section>
+
+  <!-- S25 — 你的角色 -->
+  <section class="slide fade-up" data-chapter="轉">
+    <div class="eyebrow">你和 AI 的關係</div>
+    <div class="title-l" style="margin-bottom:1rem">建築師 ＆ 工人</div>
+    <div class="roles">
+      <div class="role you">
+        <div class="role-label">YOU　・　建築師</div>
+        <div class="role-title">判斷力</div>
+        <div class="role-body">
+          畫設計圖、定規格、驗收。<br>
+          決定要做什麼，<br>
+          決定做得對不對。
+        </div>
+      </div>
+      <div class="role">
+        <div class="role-label">AI　・　工人</div>
+        <div class="role-title">執行力</div>
+        <div class="role-body">
+          快、不累、可以平行。<br>
+          照圖蓋、執行步驟、<br>
+          跑指令、寫程式。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S26 — 一句最重要 -->
+  <section class="slide fade-up" data-chapter="轉">
+    <div class="eyebrow">這四堂課如果只記得一句</div>
+    <div class="grand-quote">
+      <div class="quote" style="text-align:left;max-width:none;font-size:3.4rem">
+        不要讓 AI 做<br>
+        你也<span style="color:var(--accent)">不懂</span>的事情。
+      </div>
+    </div>
+    <div class="body" style="margin-top:2rem;max-width:42ch;text-align:center">
+      你不懂 → AI 做錯你看不出來 → 沒辦法驗收。<br>
+      AI 犯錯時非常有自信。這是最危險的地方。
+    </div>
+  </section>
+
+  <!-- S27 — 你的工作流程 -->
+  <section class="slide fade-up" data-chapter="轉">
+    <div class="eyebrow">你的新工作流程</div>
+    <div class="workflow" style="margin-top:2rem">
+      <div class="step-row">
+        <div class="step-num">①</div>
+        <div class="step-text">定規格 ── 做對了長什麼樣？</div>
+        <div class="step-who you">你</div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">②</div>
+        <div class="step-text">問 AI 提供選項</div>
+        <div class="step-who ai">AI</div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">③</div>
+        <div class="step-text">做決定</div>
+        <div class="step-who you">你</div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">④</div>
+        <div class="step-text">讓 AI 執行</div>
+        <div class="step-who ai">AI</div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">⑤</div>
+        <div class="step-text">驗收</div>
+        <div class="step-who you">你</div>
+      </div>
+    </div>
+    <div class="body" style="margin-top:2rem;max-width:42ch;text-align:center">
+      AI 在 ② ④ 出力。<br>
+      ① ③ ⑤ 是你的價值所在。
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- 合：邊界 + 看成果 + 行動                          -->
+  <!-- ============================================== -->
+
+  <!-- S28 — 章節 合 -->
+  <section class="slide chapter-slide fade-up" data-chapter="合">
+    <div class="chapter-num">CHAPTER 　 FIVE</div>
+    <div class="chapter-title">邊界，<br>讓你用得放心。</div>
+    <div class="chapter-sub">資安 ＋ 權限　・　不是限制，是基礎。</div>
+  </section>
+
+  <!-- S29 — 三件事 -->
+  <section class="slide fade-up" data-chapter="合　邊界">
+    <div class="eyebrow">資安底線　・　就三件事</div>
+    <div class="workflow" style="margin-top:1rem">
+      <div class="step-row">
+        <div class="step-num">①</div>
+        <div class="step-text">關閉資料訓練</div>
+        <div class="step-who you">一次設定</div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">②</div>
+        <div class="step-text">建 .claudeignore</div>
+        <div class="step-who you">每專案 2 分鐘</div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">③</div>
+        <div class="step-text">資料分級</div>
+        <div class="step-who you">給之前想 1 秒</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S30 — 資料分級三色 -->
+  <section class="slide fade-up" data-chapter="合　邊界">
+    <div class="eyebrow">資料分級　・　判斷句</div>
+    <div class="title-m" style="font-size:2rem;color:var(--ink-mute);margin-bottom:1rem;max-width:32ch">
+      「這個被外部看到，會怎樣？」
+    </div>
+    <div class="triple">
+      <div class="cell">
+        <div class="cell-mark ok">✓</div>
+        <div class="cell-title">沒事 ・ 給</div>
+        <div class="cell-body">
+          一般程式碼<br>
+          公開技術文件<br>
+          測試假資料<br>
+          普通會議紀錄
+        </div>
+      </div>
+      <div class="cell">
+        <div class="cell-mark warn">~</div>
+        <div class="cell-title">尷尬 ・ 想想</div>
+        <div class="cell-body">
+          公司內部文件<br>
+          法律合約<br>
+          競品分析<br>
+          未公開設計稿
+        </div>
+      </div>
+      <div class="cell">
+        <div class="cell-mark no">✕</div>
+        <div class="cell-title">有損失 ・ 不給</div>
+        <div class="cell-body">
+          密碼 ・ API Key<br>
+          客戶個資<br>
+          .env 內容<br>
+          未發布產品計畫
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S31 — 權限四模式 -->
+  <section class="slide fade-up" data-chapter="合　邊界">
+    <div class="eyebrow">權限管理　・　四種模式</div>
+    <div class="title-m" style="margin-bottom:1rem;font-size:1.8rem;color:var(--ink-mute)">從最保守到最開放</div>
+    <div class="modes">
+      <div class="mode">
+        <div class="mode-num">01</div>
+        <div class="mode-name">plan</div>
+        <div class="mode-cmd">--permission-mode<br>plan</div>
+        <div class="mode-desc">只規劃<br>完全不動手</div>
+      </div>
+      <div class="mode">
+        <div class="mode-num">02</div>
+        <div class="mode-name">預設</div>
+        <div class="mode-cmd">claude</div>
+        <div class="mode-desc">每步都問你<br>新手用</div>
+      </div>
+      <div class="mode">
+        <div class="mode-num">03</div>
+        <div class="mode-name">auto-edit</div>
+        <div class="mode-cmd">--permission-mode<br>auto-edit</div>
+        <div class="mode-desc">改檔直接做<br>shell 還是問</div>
+      </div>
+      <div class="mode">
+        <div class="mode-num">04</div>
+        <div class="mode-name" style="color:var(--warn)">bypass permissions on</div>
+        <div class="mode-cmd">--dangerously<br>-skip-permissions</div>
+        <div class="mode-desc">什麼都不問<br>個人沙箱用</div>
+      </div>
+    </div>
+    <div class="body" style="margin-top:1.5rem;font-size:1rem;color:var(--ink-mute);text-align:center">
+      指令名稱叫 <code style="font-family:var(--mono);color:var(--ink)">--dangerously-skip-permissions</code>，<br>
+      但畫面上顯示的是 <span style="color:var(--warn)">bypass permissions on</span> ── 同一件事，兩種說法。
+    </div>
+  </section>
+
+  <!-- S31.5 — 怎麼切（Shift+Tab） -->
+  <section class="slide fade-up" data-chapter="合　邊界">
+    <div class="eyebrow">怎麼切</div>
+    <div class="title-m" style="margin-bottom:2rem">三種切法 ── 看你在哪個時機。</div>
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:1.4rem 2rem;max-width:54rem;align-items:start;font-family:'Noto Sans TC',sans-serif">
+      <div style="font-weight:500;color:var(--accent)">啟動前</div>
+      <div>
+        在指令後面接 flag。<br>
+        <code style="font-family:var(--mono);font-size:0.95rem;color:var(--ink-mute)">claude --permission-mode plan</code><br>
+        <code style="font-family:var(--mono);font-size:0.95rem;color:var(--ink-mute)">claude --permission-mode acceptEdits</code><br>
+        <code style="font-family:var(--mono);font-size:0.95rem;color:var(--ink-mute)">claude --dangerously-skip-permissions</code>
+      </div>
+      <div style="font-weight:500;color:var(--accent)">對話中</div>
+      <div>
+        按 <kbd style="border:1px solid var(--line);padding:0.15rem 0.5rem;border-radius:4px;font-family:var(--mono);font-size:0.9rem">Shift</kbd> + <kbd style="border:1px solid var(--line);padding:0.15rem 0.5rem;border-radius:4px;font-family:var(--mono);font-size:0.9rem">Tab</kbd> 在四種模式之間循環切。<br>
+        <span style="color:var(--ink-mute);font-size:0.95rem">畫面右下角會顯示目前模式 ── plan / 預設 / accept edits on / bypass permissions on</span>
+      </div>
+      <div style="font-weight:500;color:var(--accent)">永久設</div>
+      <div>
+        在 <code style="font-family:var(--mono);font-size:0.95rem;color:var(--ink-mute)">~/.claude/settings.json</code> 寫死，下次自動套用。
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="body" style="font-size:1.1rem">
+      <span style="color:var(--accent)">最常用：Shift+Tab。</span><br>
+      <span style="color:var(--ink-mute);font-size:0.95rem">想規劃時切 plan、放心動手時切 accept、自己玩切 bypass。</span>
+    </div>
+  </section>
+
+  <!-- S31.6 — 永久設 settings.json -->
+  <section class="slide fade-up" data-chapter="合　邊界">
+    <div class="eyebrow">永久設　・　寫進設定檔</div>
+    <div class="title-m" style="margin-bottom:1rem">每次都 Shift+Tab？<br>不如<span style="color:var(--accent)">寫死在設定檔</span>。</div>
+    <div class="prompt-cmd" style="margin-top:0.4rem">~/.claude/settings.json</div>
+    <pre class="prompt-box" style="font-size:0.88rem;max-width:680px">{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Write(**/.env)",
+      "Write(**/.env.*)"
+    ]
+  }
+}</pre>
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:0.6rem 1.4rem;max-width:50rem;margin-top:0.8rem;text-align:left;font-family:'Noto Sans TC',sans-serif;font-size:0.95rem">
+      <div style="color:var(--accent);font-weight:500">defaultMode</div>
+      <div>每次啟動的預設模式。寫 <code style="font-family:var(--mono);font-size:0.9rem">acceptEdits</code> 最平衡 ── 改檔不問，shell 還是會問。</div>
+      <div style="color:var(--accent);font-weight:500">deny</div>
+      <div>底線。<code style="font-family:var(--mono);font-size:0.9rem">.env</code> 一律禁讀禁寫，AI 永遠看不到你的密碼。</div>
+    </div>
+    <div class="divider"></div>
+    <div class="body" style="font-size:1rem">
+      <span style="color:var(--ink-mute)">想看資深玩家的完整 settings？第三堂講 hooks 時再展開。</span>
+    </div>
+  </section>
+
+  <!-- S32 — alias cc -->
+  <section class="slide fade-up" data-chapter="合　邊界">
+    <div class="eyebrow">偷懶設定</div>
+    <div class="title-m" style="margin-bottom:2rem">把長指令變成兩個字。</div>
+    <pre class="snippet"># ~/.zshrc
+alias cc='claude --dangerously-skip-permissions'
+alias ca='claude --permission-mode auto-edit'
+alias cp='claude --permission-mode plan'</pre>
+    <div class="body" style="margin-top:2rem">
+      設定一次，永久生效。
+    </div>
+  </section>
+
+  <!-- S33 — 看 Demo 4 成果 -->
+  <section class="slide fade-up" data-chapter="合　成果">
+    <div class="label">　Demo　4　成　果　</div>
+    <div class="title-l" style="margin-top:3rem;max-width:18ch">回去看那個 URL。</div>
+    <div class="divider"></div>
+    <div class="compare" style="max-width:900px;margin-top:1rem">
+      <div class="col">
+        <div class="col-label">工程師從零做</div>
+        <div class="col-title" style="font-size:2.5rem">60–90 分鐘</div>
+        <div class="col-body">建專案、設環境、寫頁面、設部署、除錯。</div>
+      </div>
+      <div class="vline"></div>
+      <div class="col accent">
+        <div class="col-label">你貼一段 Prompt</div>
+        <div class="col-title" style="font-size:2.5rem">不到 10 分鐘</div>
+        <div class="col-body">你聽課，AI 在背景把網站送上線。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S34 — 今天回顧 -->
+  <section class="slide fade-up" data-chapter="合　回顧">
+    <div class="eyebrow">今天帶走的</div>
+    <div class="twocol" style="max-width:1100px">
+      <div>
+        <div class="label" style="margin-bottom:1.5rem">能力 ・ 四層堆疊</div>
+        <div class="stack">
+          <div class="layer">
+            <div class="demo-num">01</div>
+            <div class="demo-name" style="font-size:1.1rem">檔案讀寫</div>
+            <div class="demo-cap" style="font-size:0.9rem">　</div>
+          </div>
+          <div class="layer">
+            <div class="demo-num">02</div>
+            <div class="demo-name" style="font-size:1.1rem">主動判斷</div>
+            <div class="demo-cap" style="font-size:0.9rem">　</div>
+          </div>
+          <div class="layer">
+            <div class="demo-num">03</div>
+            <div class="demo-name" style="font-size:1.1rem">連動資料庫</div>
+            <div class="demo-cap" style="font-size:0.9rem">　</div>
+          </div>
+          <div class="layer">
+            <div class="demo-num">04</div>
+            <div class="demo-name" style="font-size:1.1rem">跨工具</div>
+            <div class="demo-cap" style="font-size:0.9rem">　</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="label" style="margin-bottom:1.5rem">觀念 ・ 三句話</div>
+        <div class="stack">
+          <div class="layer">
+            <div class="demo-num">①</div>
+            <div class="demo-name" style="font-size:1.1rem;grid-column:span 2">你判斷 ・ AI 執行</div>
+          </div>
+          <div class="layer">
+            <div class="demo-num">②</div>
+            <div class="demo-name" style="font-size:1.1rem;grid-column:span 2">給目標 ＋ 給邊界</div>
+          </div>
+          <div class="layer">
+            <div class="demo-num">③</div>
+            <div class="demo-name" style="font-size:1.1rem;grid-column:span 2">AI 是放大器</div>
+          </div>
+          <div class="layer" style="border-bottom:none">
+            <div class="demo-num" style="color:var(--accent)">★</div>
+            <div class="demo-name" style="font-size:1.1rem;color:var(--accent);grid-column:span 2">不要做你不懂的事</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S35 — 回家作業 -->
+  <section class="slide fade-up" data-chapter="合　行動">
+    <div class="eyebrow">回家作業　・　兩個</div>
+    <div class="workflow" style="margin-top:2rem;max-width:760px">
+      <div class="step-row">
+        <div class="step-num">①</div>
+        <div class="step-text">關閉資料訓練 ・ 截圖傳群</div>
+        <div class="step-who you">必做</div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">②</div>
+        <div class="step-text">建 .claudeignore ・ 截圖 ＋ 說明</div>
+        <div class="step-who you">必做</div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">③</div>
+        <div class="step-text">挑戰 ── 跟 cc 說一件你今天本來要做的事</div>
+        <div class="step-who ai">自願</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S36 — 下堂預告 -->
+  <section class="slide fade-up" data-chapter="合　預告">
+    <div class="eyebrow">下一堂</div>
+    <div class="title-l" style="max-width:20ch">CLAUDE.md<br>讓 AI 認識你。</div>
+    <div class="divider"></div>
+    <div class="body" style="max-width:42ch">
+      一份放在工作目錄的說明文件。<br>
+      AI 每次啟動自動讀。<br>
+      不用每次重新自我介紹。
+    </div>
+  </section>
+
+  <!-- S37 — 終曲 -->
+  <section class="slide finale fade-up" data-chapter="合">
+    <div class="quote">
+      你不需要等到「準備好」<br>
+      才開始用。<br>
+      <em style="color:var(--accent)">用了才會準備好。</em>
+    </div>
+    <div class="signoff">SEE YOU NEXT TIME ・ YC</div>
+  </section>
+
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  document.getElementById('pt').textContent = String(total).padStart(2, '0');
+  let cur = 0;
+
+  function go(i) {
+    if (i < 0 || i >= total) return;
+    slides[cur].classList.remove('active');
+    cur = i;
+    slides[cur].classList.add('active');
+    document.getElementById('pn').textContent = String(cur + 1).padStart(2, '0');
+    document.getElementById('chapter').textContent = slides[cur].dataset.chapter || '';
+    document.getElementById('progress').style.width = ((cur + 1) / total * 100) + '%';
+    if (location.hash !== '#' + (cur + 1)) {
+      history.replaceState(null, '', '#' + (cur + 1));
+    }
+  }
+
+  function next() { go(Math.min(cur + 1, total - 1)); }
+  function prev() { go(Math.max(cur - 1, 0)); }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); next(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+    else if (e.key === 'Home') go(0);
+    else if (e.key === 'End') go(total - 1);
+    else if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+    else if (e.key === '?' || e.key === 'h') {
+      const hint = document.getElementById('hint');
+      hint.classList.toggle('show');
+      setTimeout(() => hint.classList.remove('show'), 3000);
+    }
+  });
+
+  // Click navigation
+  document.addEventListener('click', (e) => {
+    if (e.clientX > window.innerWidth / 2) next();
+    else prev();
+  });
+
+  // Initial
+  const initial = parseInt(location.hash.replace('#', '')) || 1;
+  slides[0].classList.remove('active');
+  go(initial - 1);
+  // 顯示一次提示
+  setTimeout(() => {
+    document.getElementById('hint').classList.add('show');
+    setTimeout(() => document.getElementById('hint').classList.remove('show'), 3000);
+  }, 800);
+</script>
+
+</body>
+</html>
