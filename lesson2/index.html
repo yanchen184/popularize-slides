@@ -223,6 +223,12 @@
   .layers .row.now .layer-name { color: var(--accent); }
   .layers .layer-path { font-family: var(--mono); font-size: 0.92rem; color: var(--ink-mute); }
   .layers .layer-tag { font-size: 0.78rem; letter-spacing: 0.2em; color: var(--ink-faint); text-align: right; text-transform: uppercase; }
+  /* dense variant for 10-row tables */
+  .layers.dense .row { padding: 0.55rem 0; }
+  .layers.dense .layer-num { font-size: 1.2rem; }
+  .layers.dense .layer-name { font-size: 1rem; }
+  .layers.dense .layer-path { font-size: 0.85rem; }
+  .layers.dense .layer-tag { font-size: 0.7rem; }
 
   /* ==================== 大數字對比（時間感） ==================== */
   .bigfade {
@@ -606,8 +612,8 @@
   <!-- S11：⭐ 十大定義 -->
   <section class="slide fade-up" data-chapter="Part 5　十大定義">
     <div class="eyebrow">⭐ 這堂課唯一深講的細節</div>
-    <div class="title-l" style="max-width:22ch">寫 CLAUDE.md 的<br>十大定義。</div>
-    <div class="layers" style="max-width:920px; margin-top:1rem">
+    <div class="title-m" style="max-width:22ch; margin-bottom:0.5rem">寫 CLAUDE.md 的十大定義。</div>
+    <div class="layers dense" style="max-width:920px; margin-top:0.5rem">
       <div class="row"><div class="layer-num">1</div><div class="layer-name">角色定義</div><div class="layer-path">你是誰，職位 / 領域</div><div class="layer-tag">Role</div></div>
       <div class="row"><div class="layer-num">2</div><div class="layer-name">上下文引導</div><div class="layer-path">工作場景、技術棧、固定工作流</div><div class="layer-tag">Context</div></div>
       <div class="row"><div class="layer-num">3</div><div class="layer-name">語氣</div><div class="layer-path">繁體中文 / 簡潔 / 不奉承</div><div class="layer-tag">Tone</div></div>
