@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>AI Claude Code 概論初級班 ・ 第二堂 ・ 馴服</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Noto+Sans+TC:wght@300;400;500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ==================== 設計系統（沿用第一堂） ==================== */
+  :root {
+    --bg:           #0E0E10;
+    --bg-soft:      #15151A;
+    --line:         #2A2A30;
+    --line-soft:    #1F1F25;
+    --ink:          #F4F0E8;
+    --ink-mute:     #8A8A93;
+    --ink-faint:    #4A4A52;
+    --accent:       #D4A574;
+    --accent-soft:  #B8946A;
+    --warn:         #C97B7B;
+    --safe:         #7BA88E;
+
+    --serif:  'Cormorant Garamond', 'Noto Serif TC', Georgia, serif;
+    --sans:   'Inter', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono:   'SF Mono', 'JetBrains Mono', Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .deck { position: relative; width: 100vw; height: 100vh; }
+
+  .slide {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem 6rem;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .slide.active { display: flex; opacity: 1; }
+
+  .slide.fade-up > * {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .slide.active.fade-up > * {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .slide.active.fade-up > *:nth-child(1) { transition-delay: 0.1s; }
+  .slide.active.fade-up > *:nth-child(2) { transition-delay: 0.3s; }
+  .slide.active.fade-up > *:nth-child(3) { transition-delay: 0.5s; }
+  .slide.active.fade-up > *:nth-child(4) { transition-delay: 0.7s; }
+  .slide.active.fade-up > *:nth-child(5) { transition-delay: 0.9s; }
+
+  /* ==================== 排版元件 ==================== */
+  .eyebrow {
+    font-size: 0.78rem;
+    font-weight: 400;
+    letter-spacing: 0.4em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+  .title-xl { font-family: var(--serif); font-weight: 300; font-size: 6.5rem; line-height: 1.05; letter-spacing: -0.01em; }
+  .title-l  { font-family: var(--serif); font-weight: 300; font-size: 4.2rem; line-height: 1.15; }
+  .title-m  { font-family: var(--sans);  font-weight: 300; font-size: 2.8rem; line-height: 1.3; }
+  .title-s  { font-family: var(--sans);  font-weight: 400; font-size: 1.8rem; line-height: 1.4; }
+  .body     { font-family: var(--sans);  font-weight: 300; font-size: 1.4rem; line-height: 1.75; color: var(--ink-mute); max-width: 60ch; }
+  .body-l   { font-family: var(--sans);  font-weight: 300; font-size: 1.7rem; line-height: 1.7;  color: var(--ink); }
+  .quote    { font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 3rem; line-height: 1.5; color: var(--ink); max-width: 22ch; text-align: center; }
+  .label    { font-size: 0.8rem; font-weight: 500; letter-spacing: 0.3em; color: var(--ink-mute); text-transform: uppercase; }
+  .num      { font-family: var(--serif); font-weight: 300; font-size: 1rem; color: var(--accent); letter-spacing: 0.2em; }
+  .divider  { width: 60px; height: 1px; background: var(--accent); margin: 2rem 0; }
+  .divider.center { margin: 2rem auto; }
+
+  /* ==================== 頁碼 + 章節指示 ==================== */
+  .pagenum {
+    position: fixed; bottom: 2rem; right: 2.5rem;
+    font-family: var(--serif); font-size: 0.95rem; font-weight: 300;
+    color: var(--ink-faint); letter-spacing: 0.15em; z-index: 100;
+  }
+  .pagenum span:first-child { color: var(--accent); }
+  .chapter {
+    position: fixed; bottom: 2rem; left: 2.5rem;
+    font-size: 0.7rem; font-weight: 500; letter-spacing: 0.4em;
+    color: var(--ink-faint); text-transform: uppercase; z-index: 100;
+  }
+  .progress {
+    position: fixed; top: 0; left: 0;
+    height: 2px; background: var(--accent);
+    transition: width 0.3s ease; z-index: 100;
+  }
+
+  /* ==================== 章節分隔頁 ==================== */
+  .chapter-slide { background: var(--bg-soft); text-align: center; }
+  .chapter-slide .chapter-num { font-family: var(--serif); font-size: 1rem; font-weight: 300; letter-spacing: 0.5em; color: var(--accent); margin-bottom: 2rem; }
+  .chapter-slide .chapter-title { font-family: var(--serif); font-size: 5.5rem; font-weight: 300; line-height: 1.1; color: var(--ink); }
+  .chapter-slide .chapter-sub { margin-top: 2rem; font-size: 1.2rem; font-weight: 300; color: var(--ink-mute); letter-spacing: 0.05em; }
+
+  /* ==================== 對比表 ==================== */
+  .compare {
+    display: grid; grid-template-columns: 1fr 1px 1fr;
+    width: 100%; max-width: 1100px; margin-top: 2rem;
+  }
+  .compare > .col { padding: 0 3rem; }
+  .compare > .vline { background: var(--line); }
+  .compare .col-label { font-size: 0.75rem; letter-spacing: 0.4em; color: var(--ink-faint); text-transform: uppercase; margin-bottom: 1.5rem; }
+  .compare .col-title { font-family: var(--serif); font-size: 2rem; font-weight: 300; margin-bottom: 1.5rem; color: var(--ink); }
+  .compare .col-body { font-weight: 300; font-size: 1.2rem; line-height: 1.85; color: var(--ink-mute); }
+  .compare .col.accent .col-title { color: var(--accent); }
+
+  /* ==================== 三欄資料分級 ==================== */
+  .triple {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    width: 100%; max-width: 1200px; margin-top: 3rem;
+  }
+  .triple .cell { padding: 2.5rem 2rem; border-right: 1px solid var(--line-soft); }
+  .triple .cell:last-child { border-right: none; }
+  .triple .cell-mark { font-family: var(--serif); font-size: 2.2rem; font-weight: 300; margin-bottom: 1rem; }
+  .triple .cell-mark.ok   { color: var(--safe); }
+  .triple .cell-mark.warn { color: var(--accent); }
+  .triple .cell-mark.no   { color: var(--warn); }
+  .triple .cell-title { font-size: 1rem; font-weight: 500; letter-spacing: 0.2em; color: var(--ink); margin-bottom: 1.2rem; text-transform: uppercase; }
+  .triple .cell-body { font-size: 1.05rem; font-weight: 300; line-height: 1.85; color: var(--ink-mute); }
+
+  /* ==================== 流程箭頭 ==================== */
+  .flow { display: flex; align-items: center; justify-content: center; gap: 1.5rem; margin: 3rem 0; flex-wrap: wrap; }
+  .flow .step { padding: 1rem 1.5rem; border: 1px solid var(--line); border-radius: 4px; font-size: 1.1rem; color: var(--ink); font-weight: 300; background: var(--bg-soft); }
+  .flow .step.accent { border-color: var(--accent); color: var(--accent); }
+  .flow .arrow { color: var(--ink-faint); font-size: 1.2rem; }
+
+  /* ==================== 終曲 ==================== */
+  .finale { background: var(--bg); text-align: center; }
+  .finale .quote { font-size: 3.6rem; line-height: 1.5; max-width: 24ch; }
+  .finale .signoff { margin-top: 4rem; color: var(--ink-faint); font-size: 0.95rem; letter-spacing: 0.3em; }
+
+  /* ==================== 標題頁 ==================== */
+  .title-page { text-align: center; }
+  .title-page .meta-top {
+    position: absolute; top: 4rem; left: 4rem; right: 4rem;
+    display: flex; justify-content: space-between;
+    font-size: 0.78rem; letter-spacing: 0.4em; color: var(--ink-faint); text-transform: uppercase;
+  }
+  .title-page .main { font-family: var(--serif); font-weight: 300; font-size: 7rem; line-height: 1; }
+  .title-page .sub { margin-top: 2rem; font-weight: 300; font-size: 1.6rem; color: var(--ink-mute); letter-spacing: 0.05em; }
+  .title-page .meta-bottom {
+    position: absolute; bottom: 4rem; left: 4rem; right: 4rem;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    font-size: 0.78rem; letter-spacing: 0.4em; color: var(--ink-faint); text-transform: uppercase;
+  }
+
+  /* ==================== 程式碼 ==================== */
+  code, .mono {
+    font-family: var(--mono); font-size: 0.95em;
+    background: var(--bg-soft); padding: 0.15em 0.5em;
+    border-radius: 3px; color: var(--accent);
+    border: 1px solid var(--line-soft);
+  }
+  pre.snippet {
+    font-family: var(--mono); font-size: 1rem; line-height: 1.7;
+    background: var(--bg-soft); border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    padding: 1.5rem 2rem; color: var(--ink); border-radius: 0;
+    text-align: left; max-width: 760px; overflow-x: auto;
+  }
+  pre.prompt-box {
+    font-family: var(--mono); font-size: 0.86rem; line-height: 1.7;
+    background: var(--bg-soft); border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    padding: 1.2rem 1.6rem; color: var(--ink); border-radius: 0;
+    text-align: left; max-width: 880px; width: 100%;
+    overflow-x: auto; white-space: pre-wrap; word-break: break-word;
+    margin: 1rem auto;
+  }
+
+  /* ==================== 角色卡片 ==================== */
+  .roles {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 3rem; width: 100%; max-width: 1000px; margin-top: 3rem;
+  }
+  .role { text-align: left; padding: 2rem 0; border-top: 1px solid var(--line); }
+  .role-label { font-size: 0.78rem; letter-spacing: 0.4em; color: var(--ink-faint); text-transform: uppercase; margin-bottom: 1rem; }
+  .role-title { font-family: var(--serif); font-size: 2.4rem; font-weight: 300; color: var(--ink); margin-bottom: 1rem; }
+  .role.you .role-title { color: var(--accent); }
+  .role-body { font-weight: 300; font-size: 1.15rem; line-height: 1.85; color: var(--ink-mute); }
+
+  /* ==================== 4 層 CLAUDE.md 表格 ==================== */
+  .layers {
+    display: flex; flex-direction: column; gap: 0;
+    width: 100%; max-width: 1000px; margin-top: 2rem;
+  }
+  .layers .row {
+    display: grid; grid-template-columns: 60px 180px 1fr 130px;
+    align-items: center; padding: 1.1rem 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .layers .row:last-child { border-bottom: none; }
+  .layers .row.head { color: var(--ink-faint); font-size: 0.78rem; letter-spacing: 0.3em; text-transform: uppercase; }
+  .layers .row.now { background: rgba(212, 165, 116, 0.06); }
+  .layers .layer-num { font-family: var(--serif); font-size: 1.5rem; color: var(--ink-faint); }
+  .layers .row.now .layer-num { color: var(--accent); }
+  .layers .layer-name { font-size: 1.15rem; font-weight: 400; color: var(--ink); }
+  .layers .row.now .layer-name { color: var(--accent); }
+  .layers .layer-path { font-family: var(--mono); font-size: 0.92rem; color: var(--ink-mute); }
+  .layers .layer-tag { font-size: 0.78rem; letter-spacing: 0.2em; color: var(--ink-faint); text-align: right; text-transform: uppercase; }
+
+  /* ==================== 大數字對比（時間感） ==================== */
+  .bigfade {
+    display: flex; align-items: center; justify-content: center;
+    gap: 5rem; margin: 3rem 0;
+  }
+  .bigfade .step { font-family: var(--serif); font-weight: 300; line-height: 1; text-align: center; }
+  .bigfade .step.tail { font-size: 7rem; color: var(--ink-mute); }
+  .bigfade .step.lead { font-size: 11rem; color: var(--accent); }
+  .bigfade .vsep { width: 1px; height: 8rem; background: var(--accent-soft); opacity: 0.6; }
+  .bigfade .step .unit { font-size: 1.5rem; color: var(--ink-mute); display: block; margin-top: 1rem; letter-spacing: 0.2em; }
+
+  /* ==================== 帶走清單 ==================== */
+  .takeaway {
+    display: flex; flex-direction: column; gap: 0;
+    width: 100%; max-width: 800px; margin-top: 2rem;
+  }
+  .takeaway .item {
+    display: grid; grid-template-columns: 60px 1fr;
+    align-items: center; padding: 1.3rem 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .takeaway .item:last-child { border-bottom: none; }
+  .takeaway .item-num { font-family: var(--serif); font-size: 2rem; font-weight: 300; color: var(--accent); }
+  .takeaway .item-text { font-size: 1.3rem; font-weight: 300; line-height: 1.6; color: var(--ink); }
+
+  /* ==================== 圖片 slide ==================== */
+  .slide-image {
+    background: var(--bg);
+  }
+  .slide-image img {
+    max-width: 70vw;
+    max-height: 78vh;
+    object-fit: contain;
+    border-radius: 6px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .slide-image .caption {
+    margin-top: 1.2rem;
+    font-size: 0.9rem;
+    letter-spacing: 0.3em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+  }
+
+  /* ==================== Hint ==================== */
+  .hint {
+    position: fixed; top: 1rem; left: 50%; transform: translateX(-50%);
+    font-size: 0.7rem; color: var(--ink-faint); letter-spacing: 0.3em;
+    z-index: 1000; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+  }
+  .hint.show { opacity: 1; }
+
+  @media print {
+    .pagenum, .chapter, .progress, .hint { display: none; }
+    .slide { display: flex !important; opacity: 1 !important; page-break-after: always; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<div class="chapter" id="chapter"></div>
+<div class="pagenum"><span id="pn">01</span> &nbsp;/&nbsp; <span id="pt">--</span></div>
+<div class="hint" id="hint">← →  切換　・　F  全螢幕　・　Home  回首頁</div>
+
+<div class="deck" id="deck">
+
+  <!-- ==================================================== -->
+  <!-- 第二堂｜馴服 ── 讓 AI 開始記得你                       -->
+  <!-- 31 張 ・ 10 Parts ・ 17 Demos                          -->
+  <!-- 對應投影片設計稿.md（2026-05 版）                       -->
+  <!-- ==================================================== -->
+
+  <!-- ============================================== -->
+  <!-- PART 1 ── HOOK：失憶症同事                       -->
+  <!-- ============================================== -->
+
+  <!-- S1：標題頁 -->
+  <section class="slide title-page fade-up" data-chapter="">
+    <div class="meta-top">
+      <span>YC Studio</span>
+      <span>2026</span>
+    </div>
+    <div class="eyebrow">Lesson 02 ・ Tame</div>
+    <div class="main">馴服</div>
+    <div class="sub">讓 AI 開始記得你</div>
+    <div class="meta-bottom">
+      <span>AI 概論初級班</span>
+      <span>60 MIN</span>
+    </div>
+  </section>
+
+  <!-- S2：失憶症同事（場景對話） -->
+  <section class="slide fade-up" data-chapter="Part 1　Hook">
+    <div class="eyebrow">想像一個情境</div>
+    <div class="title-l" style="max-width:24ch">新進同事 ── 每天都<br>從零認識你一次。</div>
+    <div class="compare" style="margin-top:1.5rem">
+      <div class="col">
+        <div class="col-label">星期一</div>
+        <div class="col-title" style="color:var(--ink-mute)">「老闆，這份報告<br>要寫成什麼風格？」</div>
+        <div class="col-body">
+          你說 ── 正式一點，<br>
+          繁體中文，要附時程。
+        </div>
+      </div>
+      <div class="vline"></div>
+      <div class="col accent">
+        <div class="col-label">星期二</div>
+        <div class="col-title">「老闆，這份報告<br>要寫成什麼風格？」</div>
+        <div class="col-body">
+          ……完全沒記住。<br>
+          <em style="color:var(--accent); font-style:normal">這就是你現在的 AI 同事。</em>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S3：今天的承諾 -->
+  <section class="slide fade-up" data-chapter="Part 1　承諾">
+    <div class="eyebrow">這堂課結束後</div>
+    <div class="title-l" style="max-width:22ch">六件事你會了。</div>
+    <div class="takeaway">
+      <div class="item"><div class="item-num">1</div><div class="item-text">三招接續 session　<code>claude / -c / -r</code></div></div>
+      <div class="item"><div class="item-num">2</div><div class="item-text">看完整張 <code>.claude/</code> 辦公桌</div></div>
+      <div class="item"><div class="item-num">3</div><div class="item-text">寫好自己的全域 CLAUDE.md（用一輩子）</div></div>
+      <div class="item"><div class="item-num">4</div><div class="item-text">AI 開始累積 Auto memory</div></div>
+      <div class="item"><div class="item-num">5</div><div class="item-text">那個亂資料夾被你整理掉</div></div>
+      <div class="item"><div class="item-num">6</div><div class="item-text">會用 Plan Mode 和 ultrathink</div></div>
+    </div>
+  </section>
+
+  <!-- S3.5：學習曲線（打字盲打類比） -->
+  <section class="slide fade-up" data-chapter="Part 1　預防針">
+    <div class="eyebrow">先打個預防針</div>
+    <div class="title-l" style="max-width:22ch">學新東西，<br>一開始一定變慢。</div>
+    <div class="bigfade" style="margin-top:1rem">
+      <div class="step tail" style="font-size:5rem">
+        30
+        <span class="unit">看鍵盤打字</span>
+      </div>
+      <div class="vsep"></div>
+      <div class="step tail" style="font-size:5rem; color:var(--warn)">
+        20
+        <span class="unit" style="color:var(--warn)">剛學盲打</span>
+      </div>
+      <div class="vsep"></div>
+      <div class="step lead" style="font-size:7rem">
+        50
+        <span class="unit" style="color:var(--accent-soft)">練熟之後</span>
+      </div>
+    </div>
+    <div class="body" style="margin-top:1rem; max-width:54ch; text-align:center">
+      盲打剛學的時候<em style="color:var(--warn); font-style:normal">比看鍵盤還慢</em>。<br>
+      但你撐過那一段，速度就<em style="color:var(--accent); font-style:normal">永久翻倍</em>。
+    </div>
+    <div class="divider center"></div>
+    <div class="body" style="max-width:50ch; text-align:center; color:var(--ink-mute); font-style:italic">
+      用 Claude Code 也是 ──<br>
+      頭兩週你會覺得「自己做還比較快」。<br>
+      撐過那一段，你就回不去了。
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- PART 2 ── SESSION：三招接續                       -->
+  <!-- ============================================== -->
+
+  <!-- S4：上週你沒注意到的事 ── session -->
+  <section class="slide fade-up" data-chapter="Part 2　Session">
+    <div class="eyebrow">上週你沒注意到的事</div>
+    <div class="title-xl" style="max-width:14ch; line-height:1.1">每打一次 claude，<br>是一場<em style="color:var(--accent); font-style:normal">新對話</em>。</div>
+    <div class="divider"></div>
+    <div class="body" style="max-width:50ch">
+      關掉終端機 → session 結束。<br>
+      下次打開 → AI 不記得上一場。<br><br>
+      <em style="color:var(--accent); font-style:normal">這跟 ChatGPT 開新對話一樣。</em>
+    </div>
+  </section>
+
+  <!-- S5：三招啟動 session -->
+  <section class="slide fade-up" data-chapter="Part 2　三招">
+    <div class="eyebrow">記下來，每天都會用</div>
+    <div class="title-l" style="max-width:22ch">三招啟動 session。</div>
+    <div class="layers" style="max-width:920px; margin-top:1.5rem">
+      <div class="row head">
+        <div>　</div>
+        <div>指令</div>
+        <div>白話</div>
+        <div>場景</div>
+      </div>
+      <div class="row">
+        <div class="layer-num">1</div>
+        <div class="layer-name"><code>claude</code></div>
+        <div class="layer-path">開全新一場</div>
+        <div class="layer-tag">最常用</div>
+      </div>
+      <div class="row now">
+        <div class="layer-num">2</div>
+        <div class="layer-name"><code>claude -c</code></div>
+        <div class="layer-path">承上一場（continue）</div>
+        <div class="layer-tag">倒杯水回來</div>
+      </div>
+      <div class="row">
+        <div class="layer-num">3</div>
+        <div class="layer-name"><code>claude --resume</code></div>
+        <div class="layer-path">翻歷史挑一場（簡寫 -r）</div>
+        <div class="layer-tag">挑舊對話</div>
+      </div>
+    </div>
+    <div class="body" style="margin-top:1.5rem; max-width:54ch; text-align:center; font-style:italic; color:var(--ink-faint)">
+      Demo 1：claude -c　・　Demo 2：claude --resume
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- PART 3 ── LINUX 三件套                            -->
+  <!-- ============================================== -->
+
+  <!-- S6：session 綁在資料夾上 -->
+  <section class="slide fade-up" data-chapter="Part 3　路徑感">
+    <div class="eyebrow">關鍵差別</div>
+    <div class="title-l" style="max-width:22ch">session 是<br>「綁在資料夾上」的。</div>
+    <div class="compare" style="margin-top:1.5rem">
+      <div class="col">
+        <div class="col-label">ChatGPT</div>
+        <div class="col-title" style="color:var(--ink-mute)">按時間排</div>
+        <div class="col-body">
+          所有對話混在一起<br>
+          翻歷史靠日期
+        </div>
+      </div>
+      <div class="vline"></div>
+      <div class="col accent">
+        <div class="col-label">Claude Code</div>
+        <div class="col-title">按資料夾排</div>
+        <div class="col-body">
+          ~/projectA → A 的對話<br>
+          ~/projectB → B 的對話<br>
+          <em style="color:var(--accent); font-style:normal">兩邊互不干擾</em>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S7：cd / ls / pwd 三件套 -->
+  <section class="slide fade-up" data-chapter="Part 3　三件套">
+    <div class="eyebrow">學一點點 Linux ・ 一輩子都用得到</div>
+    <div class="title-l" style="max-width:22ch">三件套 ── 一秒記住。</div>
+    <div class="layers" style="max-width:920px; margin-top:1.5rem">
+      <div class="row head">
+        <div>　</div>
+        <div>指令</div>
+        <div>白話</div>
+        <div>場景</div>
+      </div>
+      <div class="row">
+        <div class="layer-num">!</div>
+        <div class="layer-name"><code>pwd</code></div>
+        <div class="layer-path">我現在在哪？</div>
+        <div class="layer-tag">確認位置</div>
+      </div>
+      <div class="row">
+        <div class="layer-num">!</div>
+        <div class="layer-name"><code>ls</code></div>
+        <div class="layer-path">這裡有什麼？</div>
+        <div class="layer-tag">看內容</div>
+      </div>
+      <div class="row">
+        <div class="layer-num">!</div>
+        <div class="layer-name"><code>cd</code></div>
+        <div class="layer-path">我要去哪？</div>
+        <div class="layer-tag">切換目錄</div>
+      </div>
+    </div>
+    <div class="body" style="margin-top:1.5rem; max-width:54ch; text-align:center">
+      <em style="color:var(--accent); font-style:normal">進錯資料夾 → 接錯 session ── 你以為它失憶，其實是站在另一個房間。</em>
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- PART 4 ── .claude/ 全景圖                         -->
+  <!-- ============================================== -->
+
+  <!-- S8：.claude/ 全景圖（圖片版，圖檔放在 ppt/claude-folder.png；找不到圖時自動退回 ASCII） -->
+  <section class="slide slide-image fade-up" data-chapter="Part 4　全景圖">
+    <div class="eyebrow" style="margin-bottom:1rem">⭐ 心智地圖 ・ 這是 AI 的辦公桌</div>
+    <img src="claude-folder.png" alt=".claude/ 文件夾剖析"
+         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+    <pre class="snippet" style="display:none; max-width:880px; font-size:0.92rem">你的專案/
+├── CLAUDE.md              ⭐ 團隊指令（已 commit）
+├── CLAUDE.local.md        個人覆寫（git 忽略）
+└── .claude/               控制中心
+    ├── settings.json          權限 + 配置（已 commit）
+    ├── settings.local.json    個人權限（git 忽略）
+    ├── commands/              自定斜線指令 ⭐ 第三堂
+    │   ├── review.md          → /project:review
+    │   └── deploy.md          → /project:deploy
+    ├── rules/                 模組化指令文件
+    ├── skills/                自動觸發工作流 ⭐ 第三堂
+    └── agents/                子代理（隔離）</pre>
+    <div class="caption">.claude/ 文件夾剖析</div>
+  </section>
+
+  <!-- S9：今天的路線 -->
+  <section class="slide fade-up" data-chapter="Part 4　路線">
+    <div class="eyebrow">今天怎麼走</div>
+    <div class="title-l" style="max-width:22ch">深講一個，<br>其他看一眼。</div>
+    <div class="compare" style="margin-top:1.5rem">
+      <div class="col">
+        <div class="col-label">⭐ 深講</div>
+        <div class="col-title" style="color:var(--accent)">CLAUDE.md（十大定義）</div>
+        <div class="col-body">
+          員工識別證<br>
+          今天動手寫一份<br>
+          你會用一輩子
+        </div>
+      </div>
+      <div class="vline"></div>
+      <div class="col">
+        <div class="col-label">看一眼</div>
+        <div class="col-title" style="color:var(--ink-mute)">其他全部</div>
+        <div class="col-body">
+          settings ・ commands<br>
+          agents ・ skills<br>
+          hooks ・ MCP<br>
+          <em style="color:var(--accent); font-style:normal">下堂課再深挖</em>
+        </div>
+      </div>
+    </div>
+    <div class="body" style="margin-top:1.5rem; max-width:48ch; text-align:center; font-style:italic; color:var(--ink-faint)">
+      Demo 4：講師現場 ls ~/.claude/ 給你看真實的辦公桌
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- PART 5 ── ⭐ CLAUDE.md 十大定義                    -->
+  <!-- ============================================== -->
+
+  <!-- S10：CLAUDE.md 是什麼 -->
+  <section class="slide fade-up" data-chapter="Part 5　CLAUDE.md">
+    <div class="eyebrow">那份東西叫</div>
+    <div class="title-xl" style="max-width:14ch">CLAUDE.md</div>
+    <div class="layers" style="max-width:1000px; margin-top:1.5rem">
+      <div class="row head">
+        <div>層級</div>
+        <div>名稱</div>
+        <div>路徑</div>
+        <div>適用</div>
+      </div>
+      <div class="row now">
+        <div class="layer-num">1</div>
+        <div class="layer-name">全域 ⭐</div>
+        <div class="layer-path">~/.claude/CLAUDE.md</div>
+        <div class="layer-tag">今天主寫</div>
+      </div>
+      <div class="row">
+        <div class="layer-num">2</div>
+        <div class="layer-name">專案</div>
+        <div class="layer-path">&lt;專案&gt;/CLAUDE.md</div>
+        <div class="layer-tag">跟 git，團隊共用</div>
+      </div>
+      <div class="row">
+        <div class="layer-num">3</div>
+        <div class="layer-name">專案 Local</div>
+        <div class="layer-path">&lt;專案&gt;/CLAUDE.local.md</div>
+        <div class="layer-tag">不進 git</div>
+      </div>
+      <div class="row">
+        <div class="layer-num">4</div>
+        <div class="layer-name">Managed</div>
+        <div class="layer-path">/Library/Application Support/...</div>
+        <div class="layer-tag">公司 IT 強制</div>
+      </div>
+    </div>
+    <div class="body" style="margin-top:1.5rem; max-width:48ch; text-align:center; font-style:italic; color:var(--ink-mute)">
+      讀取順序 1 → 2 → 3 → 4　・　把它想成新進員工的第一天簡介
+    </div>
+  </section>
+
+  <!-- S11：⭐ 十大定義 -->
+  <section class="slide fade-up" data-chapter="Part 5　十大定義">
+    <div class="eyebrow">⭐ 這堂課唯一深講的細節</div>
+    <div class="title-l" style="max-width:22ch">寫 CLAUDE.md 的<br>十大定義。</div>
+    <div class="layers" style="max-width:920px; margin-top:1rem">
+      <div class="row"><div class="layer-num">1</div><div class="layer-name">角色定義</div><div class="layer-path">你是誰，職位 / 領域</div><div class="layer-tag">Role</div></div>
+      <div class="row"><div class="layer-num">2</div><div class="layer-name">上下文引導</div><div class="layer-path">工作場景、技術棧、固定工作流</div><div class="layer-tag">Context</div></div>
+      <div class="row"><div class="layer-num">3</div><div class="layer-name">語氣</div><div class="layer-path">繁體中文 / 簡潔 / 不奉承</div><div class="layer-tag">Tone</div></div>
+      <div class="row"><div class="layer-num">4</div><div class="layer-name">任務描述</div><div class="layer-path">你會丟給它哪幾類任務</div><div class="layer-tag">Task</div></div>
+      <div class="row"><div class="layer-num">5</div><div class="layer-name">給予範例</div><div class="layer-path">範本放哪、優先引用</div><div class="layer-tag">Examples</div></div>
+      <div class="row"><div class="layer-num">6</div><div class="layer-name">需要處理的數據</div><div class="layer-path">輸入長什麼樣</div><div class="layer-tag">Input</div></div>
+      <div class="row"><div class="layer-num">7</div><div class="layer-name">即時任務回覆預期</div><div class="layer-path">多快、多長、多細</div><div class="layer-tag">Response</div></div>
+      <div class="row"><div class="layer-num">8</div><div class="layer-name">處理問題的步驟</div><div class="layer-path">SOP（先查什麼、再做什麼）</div><div class="layer-tag">Process</div></div>
+      <div class="row"><div class="layer-num">9</div><div class="layer-name">輸出格式</div><div class="layer-path">markdown / 條列 / 絕對路徑</div><div class="layer-tag">Output</div></div>
+      <div class="row now"><div class="layer-num">10</div><div class="layer-name">補充說明 ⭐</div><div class="layer-path">紅線、禁區、保密事項</div><div class="layer-tag">Notes</div></div>
+    </div>
+  </section>
+
+  <!-- S12：全域骨架 -->
+  <section class="slide fade-up" data-chapter="Part 5　動手寫">
+    <div class="eyebrow">Demo 5 ・ 學員填空</div>
+    <div class="title-l" style="max-width:22ch">最小骨架 ── 取自己的角色。</div>
+    <pre class="prompt-box">## 1. 角色定義
+我是 [職位]，負責 [工作內容]
+
+## 2. 上下文引導
+[你的常用工具棧、工作場景]
+
+## 3. 語氣
+繁體中文，簡潔，不奉承
+
+## 4 - 10：依需求補</pre>
+    <div class="body" style="margin-top:1rem; max-width:54ch; text-align:center; color:var(--ink-mute)">
+      <em style="color:var(--accent); font-style:normal">取了自己的角色之後，AI 就會用你的角度回答你。</em>
+    </div>
+    <div class="body" style="margin-top:0.5rem; max-width:48ch; text-align:center; font-style:italic; color:var(--ink-faint)">
+      埋線時刻：順口跟 AI 講「以後表格輸出統一用 Markdown」（Demo 7 揭）
+    </div>
+  </section>
+
+  <!-- S13：對比震撼 ── 沒寫 vs 寫了 -->
+  <section class="slide fade-up" data-chapter="Part 5　對比">
+    <div class="eyebrow">Demo 6 ・ 對比震撼</div>
+    <div class="title-l" style="max-width:22ch">沒寫 vs 寫了。</div>
+    <div class="compare" style="margin-top:1.5rem">
+      <div class="col">
+        <div class="col-label">A ・ CLAUDE.md 改名</div>
+        <div class="col-title" style="color:var(--warn)">「我不知道你是誰」</div>
+        <div class="col-body">
+          AI 用英文回答<br>
+          不知道你的角色<br>
+          不知道你要什麼風格
+        </div>
+      </div>
+      <div class="vline"></div>
+      <div class="col accent">
+        <div class="col-label">B ・ CLAUDE.md 改回</div>
+        <div class="col-title">「以你的角色 ……」</div>
+        <div class="col-body">
+          繁體中文<br>
+          用你的職位回答<br>
+          匹配你的工具棧
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- PART 6 ── ⭐ AUTO MEMORY 魅力時刻                  -->
+  <!-- ============================================== -->
+
+  <!-- S14：Auto memory 介紹 -->
+  <section class="slide fade-up" data-chapter="Part 6　Auto memory">
+    <div class="eyebrow">2026 新功能</div>
+    <div class="title-l" style="max-width:22ch">你還沒寫進 CLAUDE.md，<br>它就<em style="color:var(--accent); font-style:normal">開始記得了</em>。</div>
+    <div class="divider"></div>
+    <div class="body" style="max-width:54ch">
+      你跟它說的話，它會自己挑「值得記住的」存下來。<br>
+      下一場 session 你不用再講第二次。
+    </div>
+    <div class="body" style="margin-top:1.5rem; max-width:54ch; color:var(--ink-faint); font-size:1rem">
+      存在 <code>~/.claude/projects/&lt;專案&gt;/memory/</code><br>
+      關掉設環境變數 <code>CLAUDE_CODE_DISABLE_AUTO_MEMORY=1</code>
+    </div>
+  </section>
+
+  <!-- S15：CLAUDE.md vs Auto memory -->
+  <section class="slide fade-up" data-chapter="Part 6　差別">
+    <div class="eyebrow">員工守則 vs 共事久了</div>
+    <div class="title-l" style="max-width:22ch">兩個東西 ・ 互補。</div>
+    <div class="compare" style="margin-top:1.5rem">
+      <div class="col">
+        <div class="col-label">CLAUDE.md</div>
+        <div class="col-title">「我規定的」</div>
+        <div class="col-body">
+          你寫的規則<br>
+          全域 / 專案 / Local<br>
+          刪檔才會關
+        </div>
+      </div>
+      <div class="vline"></div>
+      <div class="col accent">
+        <div class="col-label">AUTO MEMORY</div>
+        <div class="col-title">「它觀察的」</div>
+        <div class="col-body">
+          你提過的偏好、踩過的坑<br>
+          專案層自動更新<br>
+          環境變數可關
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S16：⭐ 現場 Demo 劇本 -->
+  <section class="slide fade-up" data-chapter="Part 6　⭐ 揭秘">
+    <div class="eyebrow">Demo 7 ・ ⭐ 揭秘埋線</div>
+    <div class="title-l" style="max-width:24ch">最厲害的不是它記得 ──<br>是它<em style="color:var(--accent); font-style:normal">自己挑</em>。</div>
+    <div class="flow" style="margin-top:1.5rem">
+      <div class="step">剛剛順口說「表格用 Markdown」</div>
+      <div class="arrow">→</div>
+      <div class="step">沒寫進 CLAUDE.md</div>
+      <div class="arrow">→</div>
+      <div class="step accent">退出　・　重開　・　問</div>
+    </div>
+    <div class="body" style="margin-top:1.5rem; max-width:54ch; text-align:center; color:var(--ink-mute)">
+      「我之前跟你提過什麼工作偏好？特別是 CLAUDE.md 沒寫到的。」
+    </div>
+    <div class="body" style="margin-top:1.5rem; max-width:48ch; text-align:center">
+      <em style="color:var(--accent); font-style:normal">它記得。</em><br>
+      因為它一直在背後觀察你 ── 但只挑值得保留的存。
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- PART 7 ── 真正動手做事                            -->
+  <!-- ============================================== -->
+
+  <!-- S17：git clone 場景 -->
+  <section class="slide fade-up" data-chapter="Part 7　動手">
+    <div class="eyebrow">Demo 8 ・ 今天的工作場景</div>
+    <div class="title-l" style="max-width:22ch">我故意弄亂的<br>資料夾。</div>
+    <pre class="snippet">git clone https://github.com/yanchen184/demo-messy-folder
+cd demo-messy-folder
+claude
+
+# 進來之後
+!tree -L 1</pre>
+    <div class="body" style="margin-top:1rem; max-width:54ch; text-align:center">
+      <code>!</code> 前綴 ── <em style="color:var(--ink); font-style:normal">這行直接交給 shell 跑，不要經過 AI</em>。<br>
+      但結果留在 context，AI 看得到。
+    </div>
+  </section>
+
+  <!-- S18：專案 CLAUDE.md -->
+  <section class="slide fade-up" data-chapter="Part 7　專案層">
+    <div class="eyebrow">Demo 9 ・ 專案 CLAUDE.md</div>
+    <div class="title-l" style="max-width:22ch">全域寫「你」，<br>專案寫「規則」。</div>
+    <pre class="prompt-box">## 專案說明
+這是練習用的資料夾，學習檔案整理。
+
+## 規則
+- 整理檔案時，不要刪除任何檔案
+- 敏感資料要警告但不要打開
+- 用繁體中文回應</pre>
+    <div class="body" style="margin-top:1rem; max-width:48ch; text-align:center; font-style:italic; color:var(--ink-mute)">
+      AI 兩份都讀，疊加起來用。
+    </div>
+  </section>
+
+  <!-- S19：交辦 ── 整理亂資料夾 -->
+  <section class="slide fade-up" data-chapter="Part 7　交辦">
+    <div class="eyebrow">Demo 10 ・ ⭐ 今天的主菜</div>
+    <div class="title-l" style="max-width:22ch">交辦給 AI。</div>
+    <pre class="prompt-box">請幫我看看這個資料夾，然後做以下事：
+
+1. 告訴我看到了什麼，有沒有發現問題
+2. 依檔案類型分類：報告 / 會議紀錄 / 表格 / 其他
+3. 重複的標出來但不刪
+4. 暫存檔（temp 開頭）移到「待清理」
+5. 敏感資料警告我
+
+請列出計畫，等我確認後再執行。</pre>
+    <div class="body" style="margin-top:1rem; max-width:48ch; text-align:center">
+      最後一句 ── <em style="color:var(--accent); font-style:normal">「請列出計畫，等我確認後再執行」</em><br>
+      <span style="font-size:1.05rem; color:var(--ink-mute)">是你以後處理大事情的標準起手式。</span>
+    </div>
+  </section>
+
+  <!-- S20：時間感 -->
+  <section class="slide fade-up" data-chapter="Part 7　時間感">
+    <div class="eyebrow">手動 vs AI</div>
+    <div class="bigfade">
+      <div class="step tail">
+        50<br>
+        <span class="unit">分鐘 ・ 手動</span>
+      </div>
+      <div class="vsep"></div>
+      <div class="step lead">
+        90<br>
+        <span class="unit" style="color:var(--accent-soft)">秒 ・ AI</span>
+      </div>
+    </div>
+    <div class="divider center"></div>
+    <div class="body" style="max-width:50ch; text-align:center">
+      不是 AI 厲害。<br>
+      是「<em style="color:var(--accent); font-style:normal">判斷加動手</em>」這件事可以全部交給它。
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- PART 8 ── 目錄巡禮：5 個抽屜                       -->
+  <!-- ============================================== -->
+
+  <!-- S21：5 個抽屜總覽 -->
+  <section class="slide fade-up" data-chapter="Part 8　巡禮">
+    <div class="eyebrow">接下來 5 個抽屜 ・ 每個 3 分鐘</div>
+    <div class="title-l" style="max-width:22ch">辦公桌的<br>其他抽屜。</div>
+    <div class="layers" style="max-width:920px; margin-top:1.5rem">
+      <div class="row"><div class="layer-num">·</div><div class="layer-name">commands/</div><div class="layer-path">抽屜裡的工具 ── 你叫它才出來</div><div class="layer-tag">/&lt;名字&gt;</div></div>
+      <div class="row now"><div class="layer-num">⭐</div><div class="layer-name">agents/</div><div class="layer-path">派個小幫手（今天動手生一個）</div><div class="layer-tag">@召喚</div></div>
+      <div class="row"><div class="layer-num">·</div><div class="layer-name">skills/</div><div class="layer-path">自動感應燈 ── 時機到自己亮</div><div class="layer-tag">下堂主菜</div></div>
+      <div class="row"><div class="layer-num">·</div><div class="layer-name">hooks/</div><div class="layer-path">觸發機關 ── 事件一發生就跑</div><div class="layer-tag">事件驅動</div></div>
+      <div class="row"><div class="layer-num">·</div><div class="layer-name">MCP</div><div class="layer-path">外掛橋接 ── 接外部工具</div><div class="layer-tag">一般人用不到</div></div>
+    </div>
+  </section>
+
+  <!-- S22：commands/ -->
+  <section class="slide fade-up" data-chapter="Part 8　commands">
+    <div class="eyebrow">Demo 11 ・ commands/</div>
+    <div class="title-l" style="max-width:22ch">抽屜裡的工具。</div>
+    <pre class="snippet">~/.claude/commands/sync.md   (一個檔案 = 一個斜線指令)
+
+打 /sync           AI 就讀這份檔的內容去跑
+打 /review         讀 review.md 去跑
+打 /&lt;你自己取的&gt;     讀對應的檔案去跑</pre>
+    <div class="body" style="margin-top:1rem; max-width:48ch; text-align:center; color:var(--ink-mute)">
+      <em style="color:var(--accent); font-style:normal">下堂課我們親手做一個 /&lt;你自己的名字&gt;。</em>
+    </div>
+  </section>
+
+  <!-- S23：⭐ agents/ -->
+  <section class="slide fade-up" data-chapter="Part 8　agents ⭐">
+    <div class="eyebrow">Demo 12 ・ ⭐ 動手做</div>
+    <div class="title-l" style="max-width:22ch">派個小幫手。</div>
+    <pre class="prompt-box">請幫我在 ~/.claude/agents/ 建一個
+code-reviewer 的 agent。
+
+它要：
+- 擅長 React / Python
+- 主動挑出沒處理的錯誤、硬編碼的密鑰
+- 找出沒處理的 edge case
+- 回報嚴重等級（CRITICAL / HIGH / MEDIUM / LOW）</pre>
+    <div class="body" style="margin-top:1rem; max-width:54ch; text-align:center">
+      跟主 session <em style="color:var(--accent); font-style:normal">隔離</em> ── 不會吃掉你的對話 token。<br>
+      <span style="color:var(--ink-mute)">叫他 → 他做事 → 結果回給你。</span>
+    </div>
+  </section>
+
+  <!-- S24：skills/ -->
+  <section class="slide fade-up" data-chapter="Part 8　skills">
+    <div class="eyebrow">Demo 13 ・ 下堂主菜，今天有印象</div>
+    <div class="title-l" style="max-width:22ch">時機到了，<br>它<em style="color:var(--accent); font-style:normal">自己跑</em>。</div>
+    <div class="compare" style="margin-top:1.5rem">
+      <div class="col">
+        <div class="col-label">commands</div>
+        <div class="col-title" style="color:var(--ink-mute)">你打 /&lt;名字&gt; 才跑</div>
+        <div class="col-body">
+          /sync ・ /review<br>
+          手動觸發
+        </div>
+      </div>
+      <div class="vline"></div>
+      <div class="col accent">
+        <div class="col-label">skills</div>
+        <div class="col-title">時機到了自己跑</div>
+        <div class="col-body">
+          說「幫我做投影片」<br>
+          → 觸發 pptx skill<br>
+          寫測試 → 觸發 tdd skill
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S25：hooks/ -->
+  <section class="slide fade-up" data-chapter="Part 8　hooks">
+    <div class="eyebrow">Demo 14 ・ hooks/</div>
+    <div class="title-l" style="max-width:22ch">事件一發生 ──<br>就跑這段腳本。</div>
+    <div class="layers" style="max-width:920px; margin-top:1.5rem">
+      <div class="row head">
+        <div>　</div>
+        <div>事件</div>
+        <div>時機</div>
+        <div>例子</div>
+      </div>
+      <div class="row">
+        <div class="layer-num">·</div>
+        <div class="layer-name">PreToolUse</div>
+        <div class="layer-path">AI 動手前先檢查</div>
+        <div class="layer-tag">阻擋</div>
+      </div>
+      <div class="row">
+        <div class="layer-num">·</div>
+        <div class="layer-name">PostToolUse</div>
+        <div class="layer-path">AI 動完自動格式化</div>
+        <div class="layer-tag">收尾</div>
+      </div>
+      <div class="row now">
+        <div class="layer-num">·</div>
+        <div class="layer-name">Stop</div>
+        <div class="layer-path">session 結束時收尾</div>
+        <div class="layer-tag">講師例</div>
+      </div>
+    </div>
+    <div class="body" style="margin-top:1.5rem; max-width:48ch; text-align:center; font-style:italic; color:var(--ink-mute)">
+      我自己用：每 10 輪對話提醒我寫記憶宮殿
+    </div>
+  </section>
+
+  <!-- S26：MCP -->
+  <section class="slide fade-up" data-chapter="Part 8　MCP">
+    <div class="eyebrow">Demo 15 ・ 大部分人用不到，但我有例外</div>
+    <div class="title-l" style="max-width:22ch">外掛橋接協議。</div>
+    <div class="divider"></div>
+    <div class="body" style="max-width:50ch">
+      MCP = Model Context Protocol<br>
+      讓 AI 能呼叫<em style="color:var(--accent); font-style:normal">外部工具</em>的橋接協議。<br><br>
+      大部分人不需要，預設工具就夠。
+    </div>
+    <div class="body" style="margin-top:1.5rem; max-width:50ch">
+      我自己用兩個 ──<br>
+      <code>Playwright MCP</code> ── AI 開瀏覽器幫你點按鈕<br>
+      <code>記憶宮殿 MCP</code> ── 跨 session 長期記憶（呼應 Auto memory）
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- PART 9 ── 大事情先看計畫                          -->
+  <!-- ============================================== -->
+
+  <!-- S27：Plan Mode -->
+  <section class="slide fade-up" data-chapter="Part 9　Plan Mode">
+    <div class="eyebrow">Demo 16 ・ Shift + Tab</div>
+    <div class="title-l" style="max-width:24ch">「不准動」 vs 「先跟我說再動」。</div>
+    <div class="compare" style="margin-top:1.5rem">
+      <div class="col">
+        <div class="col-label">第一堂教過</div>
+        <div class="col-title"><code style="font-size:0.9em">--permission-mode plan</code></div>
+        <div class="col-body">
+          <em style="color:var(--warn); font-style:normal">完全不准動檔案。</em><br>
+          這是「<strong>權限</strong>」。
+        </div>
+      </div>
+      <div class="vline"></div>
+      <div class="col accent">
+        <div class="col-label">這堂課的</div>
+        <div class="col-title">Plan Mode（Shift + Tab）</div>
+        <div class="col-body">
+          <em style="color:var(--accent); font-style:normal">可以動，但動之前先說。</em><br>
+          這是「<strong>流程</strong>」。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S28：⭐ Extended Thinking 四階 -->
+  <section class="slide fade-up" data-chapter="Part 9　四階思考力">
+    <div class="eyebrow">Demo 17 ・ ⭐ 四階思考力</div>
+    <div class="title-l" style="max-width:22ch">不是「開不開」，<br>是「<em style="color:var(--accent); font-style:normal">開多大</em>」。</div>
+    <div class="layers" style="max-width:920px; margin-top:1rem">
+      <div class="row head">
+        <div>級</div>
+        <div>觸發詞</div>
+        <div>預算</div>
+        <div>場景</div>
+      </div>
+      <div class="row">
+        <div class="layer-num">1</div>
+        <div class="layer-name"><code>think</code></div>
+        <div class="layer-path">~4,000 tokens</div>
+        <div class="layer-tag">想一下</div>
+      </div>
+      <div class="row">
+        <div class="layer-num">2</div>
+        <div class="layer-name"><code>think hard</code></div>
+        <div class="layer-path">~10,000 tokens</div>
+        <div class="layer-tag">中等推理</div>
+      </div>
+      <div class="row">
+        <div class="layer-num">3</div>
+        <div class="layer-name"><code>think harder</code></div>
+        <div class="layer-path">~30,000 tokens</div>
+        <div class="layer-tag">複雜推理</div>
+      </div>
+      <div class="row now">
+        <div class="layer-num">4</div>
+        <div class="layer-name"><code>ultrathink</code> ⭐</div>
+        <div class="layer-path">~31,999 tokens</div>
+        <div class="layer-tag">最大火力</div>
+      </div>
+    </div>
+    <div class="body" style="margin-top:1.5rem; max-width:54ch; text-align:center">
+      簡單問題不要開，浪費。<br>
+      <em style="color:var(--accent); font-style:normal">複雜問題打開，省你來回問十次。</em>
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- PART 10 ── 收尾                                  -->
+  <!-- ============================================== -->
+
+  <!-- S29：⭐ 今天 7 件事 -->
+  <section class="slide fade-up" data-chapter="Part 10　帶走">
+    <div class="eyebrow">⭐ 重點復誦 ・ 逐條走一次</div>
+    <div class="title-l" style="max-width:22ch">今天你帶走 7 件事。</div>
+    <div class="takeaway" style="max-width:880px">
+      <div class="item"><div class="item-num">1</div><div class="item-text">session 三招　<code>claude / -c / --resume</code></div></div>
+      <div class="item"><div class="item-num">2</div><div class="item-text">Linux 三件套　<code>pwd / ls / cd</code></div></div>
+      <div class="item"><div class="item-num">3</div><div class="item-text"><code>.claude/</code> 全景　辦公桌 6 個抽屜，下堂深挖</div></div>
+      <div class="item"><div class="item-num">4</div><div class="item-text">CLAUDE.md 十大定義 + 你自己的全域版（用一輩子）</div></div>
+      <div class="item"><div class="item-num">5</div><div class="item-text">Auto memory　在背後一直學你</div></div>
+      <div class="item"><div class="item-num">6</div><div class="item-text">整理亂資料夾的手感　判斷 + 動手都交給它</div></div>
+      <div class="item"><div class="item-num">7</div><div class="item-text">Plan Mode + ultrathink　大事先看計畫、複雜事火力全開</div></div>
+    </div>
+  </section>
+
+  <!-- S30：銜接第三堂 -->
+  <section class="slide fade-up" data-chapter="Part 10　銜接">
+    <div class="eyebrow">下週主題</div>
+    <div class="title-l" style="max-width:22ch">把你變成<br>有專屬工具的人。</div>
+    <div class="divider"></div>
+    <div class="body" style="max-width:48ch">
+      今天你看完整張辦公桌。<br><br>
+      下週我們深挖兩個抽屜 ──<br>
+      <code>commands</code> ── 把你的工作流封成 <code>/&lt;名字&gt;</code><br>
+      <code>skills</code> ── 讓 AI 在對的時機自己出招
+    </div>
+    <div class="body" style="margin-top:1.5rem; max-width:48ch; color:var(--ink-mute); font-style:italic">
+      第三堂 ── 變身。
+    </div>
+  </section>
+
+  <!-- S31：終曲 -->
+  <section class="slide finale fade-up" data-chapter="Part 10　終曲">
+    <div class="quote">
+      AI 沒有記憶。<br>
+      但你可以給它<br>
+      <em style="color:var(--accent)">一本說明書，</em><br>
+      <em style="color:var(--accent)">還有一張辦公桌。</em>
+    </div>
+    <div class="signoff">SEE YOU NEXT TIME ・ YC</div>
+  </section>
+
+
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  document.getElementById('pt').textContent = String(total).padStart(2, '0');
+  let cur = 0;
+
+  function go(i) {
+    if (i < 0 || i >= total) return;
+    slides[cur].classList.remove('active');
+    cur = i;
+    slides[cur].classList.add('active');
+    document.getElementById('pn').textContent = String(cur + 1).padStart(2, '0');
+    document.getElementById('chapter').textContent = slides[cur].dataset.chapter || '';
+    document.getElementById('progress').style.width = ((cur + 1) / total * 100) + '%';
+    if (location.hash !== '#' + (cur + 1)) {
+      history.replaceState(null, '', '#' + (cur + 1));
+    }
+  }
+
+  function next() { go(Math.min(cur + 1, total - 1)); }
+  function prev() { go(Math.max(cur - 1, 0)); }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); next(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+    else if (e.key === 'Home') go(0);
+    else if (e.key === 'End') go(total - 1);
+    else if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+    else if (e.key === '?' || e.key === 'h') {
+      const hint = document.getElementById('hint');
+      hint.classList.toggle('show');
+      setTimeout(() => hint.classList.remove('show'), 3000);
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (e.clientX > window.innerWidth / 2) next();
+    else prev();
+  });
+
+  const initial = parseInt(location.hash.replace('#', '')) || 1;
+  slides[0].classList.remove('active');
+  go(initial - 1);
+  setTimeout(() => {
+    document.getElementById('hint').classList.add('show');
+    setTimeout(() => document.getElementById('hint').classList.remove('show'), 3000);
+  }, 800);
+</script>
+
+</body>
+</html>
