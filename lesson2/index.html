@@ -304,6 +304,37 @@
   <!-- ==================================================== -->
 
   <!-- ============================================== -->
+  <!-- ============================================== -->
+  <!-- PART 0 ── 它能幹嘛：開場震撼 demo                -->
+  <!-- ============================================== -->
+
+  <!-- S0a：先看它能幹嘛 -->
+  <section class="slide fade-up" data-chapter="Part 0　先看它能幹嘛">
+    <div class="eyebrow">⭐ Demo 0 ・ 開場 30 秒</div>
+    <div class="title-l" style="max-width:22ch">上網。讀文件。<br>自己<em style="color:var(--accent); font-style:normal">動手</em>。</div>
+    <div class="divider"></div>
+    <div class="body" style="max-width:54ch">
+      ChatGPT 是<span style="color:var(--ink-mute)">對話框</span>。<br>
+      Claude Code 是<em style="color:var(--accent); font-style:normal">有手有腳的同事</em> ── 在你的電腦裡。
+    </div>
+    <div class="body" style="margin-top:1.5rem; max-width:54ch; color:var(--ink-faint); font-size:1rem">
+      它會開瀏覽器、跑指令、改檔案 ── 但要先記得你是誰。
+    </div>
+  </section>
+
+  <!-- S0b：Demo 0 ── 查特斯拉股價 -->
+  <section class="slide fade-up" data-chapter="Part 0　現場 demo">
+    <div class="eyebrow">Demo 0 ・ 切到 cmd</div>
+    <div class="title-l" style="max-width:22ch">「特斯拉<br>現在<em style="color:var(--accent); font-style:normal">多少錢</em>?」</div>
+    <pre class="prompt-box">幫我查一下特斯拉現在的股價，
+順便看一下今天漲還是跌。</pre>
+    <div class="body" style="margin-top:1rem; max-width:54ch; text-align:center; color:var(--ink-mute)">
+      ChatGPT 不能上網（除非開插件）<br>
+      <em style="color:var(--accent); font-style:normal">Claude Code 直接抓</em> ── WebFetch 是內建工具。
+    </div>
+  </section>
+
+  <!-- ============================================== -->
   <!-- PART 1 ── HOOK：失憶症同事                       -->
   <!-- ============================================== -->
 
@@ -849,27 +880,85 @@ claude
     </div>
   </section>
 
-  <!-- S23：⭐ agents/ -->
+  <!-- S23：⭐ agents/ ── 概念 -->
   <section class="slide fade-up" data-chapter="Part 8　agents ⭐">
-    <div class="eyebrow">Demo 12 ・ ⭐ 動手做</div>
-    <div class="title-l" style="max-width:22ch">派個小幫手。</div>
+    <div class="eyebrow">⭐ 一個人忙不過來</div>
+    <div class="title-l" style="max-width:22ch">你可以叫<br><em style="color:var(--accent); font-style:normal">分身</em>。</div>
+    <div class="divider"></div>
+    <div class="body" style="max-width:54ch">
+      agent = 你<em style="color:var(--accent); font-style:normal">派出去</em>的小幫手 ── 有自己的角色、自己的工具權限。<br>
+      跟主 session <em style="color:var(--accent); font-style:normal">隔離</em>，不吃你的對話 token。
+    </div>
+    <div class="compare" style="margin-top:1.5rem">
+      <div class="col">
+        <div class="col-label">CLAUDE.md</div>
+        <div class="col-title" style="color:var(--ink-mute)">「我規定的」</div>
+        <div class="col-body">主 session 行為</div>
+      </div>
+      <div class="vline"></div>
+      <div class="col accent">
+        <div class="col-label">agents/</div>
+        <div class="col-title">「我派出去的」</div>
+        <div class="col-body">獨立分身去做事</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S23b：寫一個 agent -->
+  <section class="slide fade-up" data-chapter="Part 8　寫 agent">
+    <div class="eyebrow">Demo 12 ・ ⭐ 動手寫</div>
+    <div class="title-l" style="max-width:22ch">不用會寫 ── <br>用<em style="color:var(--accent); font-style:normal">講</em>的。</div>
     <pre class="prompt-box">請幫我在 ~/.claude/agents/ 建一個
-code-reviewer 的 agent。
+stock-watcher 的 agent。
 
 它要：
-- 擅長 React / Python
-- 主動挑出沒處理的錯誤、硬編碼的密鑰
-- 找出沒處理的 edge case
-- 回報嚴重等級（CRITICAL / HIGH / MEDIUM / LOW）</pre>
-    <div class="body" style="margin-top:1rem; max-width:54ch; text-align:center">
-      跟主 session <em style="color:var(--accent); font-style:normal">隔離</em> ── 不會吃掉你的對話 token。<br>
-      <span style="color:var(--ink-mute)">叫他 → 他做事 → 結果回給你。</span>
+- 專門查股票即時行情、新聞
+- 可以用 WebFetch / WebSearch
+- 回報時附「資料來源連結」
+- 不要碰我的程式碼</pre>
+    <div class="body" style="margin-top:1rem; max-width:54ch; text-align:center; color:var(--ink-mute)">
+      你描述需求 → Claude 自己生成 frontmatter + body<br>
+      <em style="color:var(--accent); font-style:normal">~/.claude/agents/stock-watcher.md</em> 一個檔案搞定。
+    </div>
+  </section>
+
+  <!-- S23c：用 agent -->
+  <section class="slide fade-up" data-chapter="Part 8　用 agent">
+    <div class="eyebrow">Demo 13 ・ 派他出任務</div>
+    <div class="title-l" style="max-width:22ch">叫一聲 ── 他就出動。</div>
+    <div class="flow" style="margin-top:1.5rem">
+      <div class="step">主 session</div>
+      <div class="arrow">→</div>
+      <div class="step accent">@stock-watcher 查 TSLA</div>
+      <div class="arrow">→</div>
+      <div class="step">獨立跑</div>
+      <div class="arrow">→</div>
+      <div class="step">結果回主 session</div>
+    </div>
+    <div class="body" style="margin-top:1.5rem; max-width:54ch; text-align:center">
+      可以<em style="color:var(--accent); font-style:normal">同時派 3 個</em> ── 一個查資料、一個寫 code、一個 review。<br>
+      <span style="color:var(--ink-mute)">主 session 乾乾淨淨，不被中間過程污染。</span>
+    </div>
+  </section>
+
+  <!-- S23d：內建 agent 一覽 -->
+  <section class="slide fade-up" data-chapter="Part 8　內建 agent">
+    <div class="eyebrow">不用自己寫，先用內建的</div>
+    <div class="title-m" style="max-width:22ch; margin-bottom:0.5rem">出廠就有 30+ 個分身。</div>
+    <div class="layers dense" style="max-width:920px; margin-top:0.5rem">
+      <div class="row head"><div></div><div>名字</div><div>用來幹嘛</div><div>觸發</div></div>
+      <div class="row"><div class="layer-num">·</div><div class="layer-name">planner</div><div class="layer-path">複雜功能規劃、拆步驟</div><div class="layer-tag">Plan</div></div>
+      <div class="row"><div class="layer-num">·</div><div class="layer-name">code-reviewer</div><div class="layer-path">寫完 code 自動 review</div><div class="layer-tag">Review</div></div>
+      <div class="row"><div class="layer-num">·</div><div class="layer-name">tdd-guide</div><div class="layer-path">逼你先寫測試再寫實作</div><div class="layer-tag">TDD</div></div>
+      <div class="row"><div class="layer-num">·</div><div class="layer-name">Explore</div><div class="layer-path">大型 codebase 找東西</div><div class="layer-tag">Search</div></div>
+      <div class="row"><div class="layer-num">·</div><div class="layer-name">security-reviewer</div><div class="layer-path">commit 前掃 OWASP / 密鑰</div><div class="layer-tag">Sec</div></div>
+      <div class="row now"><div class="layer-num">·</div><div class="layer-name">java / react / kotlin / go ...</div><div class="layer-path">語言 / 框架專屬 reviewer</div><div class="layer-tag">Lang</div></div>
     </div>
   </section>
 
   <!-- S24：skills/ -->
   <section class="slide fade-up" data-chapter="Part 8　skills">
-    <div class="eyebrow">Demo 13 ・ 下堂主菜，今天有印象</div>
+    <div class="eyebrow">Demo 14 ・ 下堂主菜，今天有印象</div>
     <div class="title-l" style="max-width:22ch">時機到了，<br>它<em style="color:var(--accent); font-style:normal">自己跑</em>。</div>
     <div class="compare" style="margin-top:1.5rem">
       <div class="col">
@@ -895,7 +984,7 @@ code-reviewer 的 agent。
 
   <!-- S25：hooks/ -->
   <section class="slide fade-up" data-chapter="Part 8　hooks">
-    <div class="eyebrow">Demo 14 ・ hooks/</div>
+    <div class="eyebrow">Demo 15 ・ hooks/</div>
     <div class="title-l" style="max-width:22ch">事件一發生 ──<br>就跑這段腳本。</div>
     <div class="layers" style="max-width:920px; margin-top:1.5rem">
       <div class="row head">
@@ -930,7 +1019,7 @@ code-reviewer 的 agent。
 
   <!-- S26：MCP -->
   <section class="slide fade-up" data-chapter="Part 8　MCP">
-    <div class="eyebrow">Demo 15 ・ 大部分人用不到，但我有例外</div>
+    <div class="eyebrow">Demo 16 ・ 大部分人用不到，但我有例外</div>
     <div class="title-l" style="max-width:22ch">外掛橋接協議。</div>
     <div class="divider"></div>
     <div class="body" style="max-width:50ch">
@@ -951,7 +1040,7 @@ code-reviewer 的 agent。
 
   <!-- S27：Plan Mode -->
   <section class="slide fade-up" data-chapter="Part 9　Plan Mode">
-    <div class="eyebrow">Demo 16 ・ Shift + Tab</div>
+    <div class="eyebrow">Demo 17 ・ Shift + Tab</div>
     <div class="title-l" style="max-width:24ch">「不准動」 vs 「先跟我說再動」。</div>
     <div class="compare" style="margin-top:1.5rem">
       <div class="col">
@@ -976,7 +1065,7 @@ code-reviewer 的 agent。
 
   <!-- S28：⭐ Extended Thinking 四階 -->
   <section class="slide fade-up" data-chapter="Part 9　四階思考力">
-    <div class="eyebrow">Demo 17 ・ ⭐ 四階思考力</div>
+    <div class="eyebrow">Demo 18 ・ ⭐ 四階思考力</div>
     <div class="title-l" style="max-width:22ch">不是「開不開」，<br>是「<em style="color:var(--accent); font-style:normal">開多大</em>」。</div>
     <div class="layers" style="max-width:920px; margin-top:1rem">
       <div class="row head">
@@ -1023,7 +1112,7 @@ code-reviewer 的 agent。
   <!-- S29：⭐ 今天 7 件事 -->
   <section class="slide fade-up" data-chapter="Part 10　帶走">
     <div class="eyebrow">⭐ 重點復誦 ・ 逐條走一次</div>
-    <div class="title-l" style="max-width:22ch">今天你帶走 7 件事。</div>
+    <div class="title-l" style="max-width:22ch">今天你帶走 8 件事。</div>
     <div class="takeaway" style="max-width:880px">
       <div class="item"><div class="item-num">1</div><div class="item-text">session 三招　<code>claude / -c / --resume</code></div></div>
       <div class="item"><div class="item-num">2</div><div class="item-text">Linux 三件套　<code>pwd / ls / cd</code></div></div>
@@ -1031,7 +1120,8 @@ code-reviewer 的 agent。
       <div class="item"><div class="item-num">4</div><div class="item-text">CLAUDE.md 十大定義 + 你自己的全域版（用一輩子）</div></div>
       <div class="item"><div class="item-num">5</div><div class="item-text">Auto memory　在背後一直學你</div></div>
       <div class="item"><div class="item-num">6</div><div class="item-text">整理亂資料夾的手感　判斷 + 動手都交給它</div></div>
-      <div class="item"><div class="item-num">7</div><div class="item-text">Plan Mode + ultrathink　大事先看計畫、複雜事火力全開</div></div>
+      <div class="item"><div class="item-num">7</div><div class="item-text">agents　派分身做事，主 session 不被污染</div></div>
+      <div class="item"><div class="item-num">8</div><div class="item-text">Plan Mode + ultrathink　大事先看計畫、複雜事火力全開</div></div>
     </div>
   </section>
 
