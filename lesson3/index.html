@@ -570,48 +570,50 @@
     </div>
   </section>
 
-  <!-- P8：加碼 ── Claude Code Hooks -->
+  <!-- P8：加碼 ── Claude Code Hooks（可實作） -->
   <section class="slide fade-up" data-chapter="加碼 ・ Hooks">
     <div class="eyebrow">Bonus ・ 不是 5 武器，是彩蛋</div>
-    <div class="title-l" style="max-width:24ch">你不講，<br>它<em style="color:var(--accent); font-style:normal">自己跑</em>。</div>
-    <div class="body" style="margin-top:0.5rem; text-align:center; max-width:54ch">
-      Loop 是<em style="color:var(--accent); font-style:normal">你叫</em> AI 重複做。<br>
-      Hook 是 <em style="color:var(--accent); font-style:normal">AI 動的時候，系統自動跑腳本</em>。<br>
-      設定檔在 <code>~/.claude/settings.json</code>。
+    <div class="bigcmd" style="font-size:4.5rem">Hooks ・ 你不講它自己跑</div>
+    <div class="body" style="margin-top:0.6rem; text-align:center; max-width:60ch">
+      在 <code>~/.claude/settings.json</code> 加幾行 ── AI 動的瞬間<em style="color:var(--accent); font-style:normal">自動觸發腳本</em>。
     </div>
-    <div class="triple" style="margin-top:1.8rem">
+    <div class="triple" style="margin-top:1.4rem">
       <div class="cell">
         <div class="cell-mark ok">─</div>
-        <div class="cell-tag">時機 1</div>
-        <div class="cell-title">SessionStart</div>
-        <div class="cell-body">
-          打開 Claude Code<br>
-          那一瞬間。<br><br>
-          <span style="color:var(--ink-faint); font-size:0.92rem">例：跑 session-start.sh，<br>每次都打招呼。</span>
+        <div class="cell-tag">時機 1 ・ SessionStart</div>
+        <div class="cell-title">開場自動播報</div>
+        <div class="cell-body" style="font-size:0.95rem">
+          「打開 Claude Code 就<br>
+          <em style="color:var(--accent); font-style:normal">先念昨天的 TODO</em> 給我聽」<br><br>
+          <code style="font-size:0.78rem">cat ~/today.md</code>
         </div>
       </div>
       <div class="cell">
         <div class="cell-mark warn">─</div>
-        <div class="cell-tag">時機 2</div>
-        <div class="cell-title">Pre / PostToolUse</div>
-        <div class="cell-body">
-          AI 動手前 / 後。<br><br>
-          <span style="color:var(--ink-faint); font-size:0.92rem">例：寫檔前自動備份、<br>跑指令後自動 lint。</span>
+        <div class="cell-tag">時機 2 ・ PostToolUse</div>
+        <div class="cell-title">改檔後自動跑</div>
+        <div class="cell-body" style="font-size:0.95rem">
+          「AI 一改 .ts 檔，<br>
+          <em style="color:var(--accent); font-style:normal">自動跑 prettier 格式化</em>」<br><br>
+          <code style="font-size:0.78rem">npx prettier --write $FILE</code>
         </div>
       </div>
       <div class="cell">
         <div class="cell-mark no">─</div>
-        <div class="cell-tag">時機 3</div>
-        <div class="cell-title">Stop</div>
-        <div class="cell-body">
-          AI 講完話那一瞬間。<br><br>
-          <span style="color:var(--ink-faint); font-size:0.92rem">例：notify、轉發 LINE、<br>自動存進記憶系統。</span>
+        <div class="cell-tag">時機 3 ・ Stop</div>
+        <div class="cell-title">講完自動通知</div>
+        <div class="cell-body" style="font-size:0.95rem">
+          「AI 講完，<br>
+          <em style="color:var(--accent); font-style:normal">手機跳 LINE 通知</em>」<br><br>
+          <code style="font-size:0.78rem">curl LINE_NOTIFY_API</code>
         </div>
       </div>
     </div>
-    <div class="body" style="margin-top:1.8rem; text-align:center; max-width:64ch; font-style:italic">
-      「Skill 是你叫 AI 重複做、<br>Hook 是 AI 自己叫腳本重複做 ── <em style="color:var(--accent); font-style:normal">一個你主動、一個系統自動</em>。」<br>
-      <span style="color:var(--ink-faint); font-style:normal; font-size:1rem">今天記得這個詞就好 ── 進階班再展開。</span>
+    <div class="body" style="margin-top:1.2rem; text-align:center; max-width:64ch">
+      <strong style="color:var(--ink); font-weight:400">怎麼裝</strong>：跟 AI 講「請幫我在 settings.json 加一個 Stop hook，AI 講完就跑 <code>terminal-notifier</code> 跳通知」── <em style="color:var(--accent); font-style:normal">你不用會寫 JSON</em>。
+    </div>
+    <div class="body" style="margin-top:0.8rem; text-align:center; max-width:60ch; font-style:italic; font-size:1.15rem">
+      「Skill 是你叫 AI 重複做、Hook 是 <em style="color:var(--accent); font-style:normal">AI 自己叫腳本重複做</em>。」
     </div>
   </section>
 
