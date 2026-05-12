@@ -497,43 +497,51 @@
     </div>
   </section>
 
-  <!-- P6：武器 4 Subagent -->
+  <!-- P6：武器 4 Subagent（如何實作） -->
   <section class="slide fade-up" data-chapter="武器 4　Subagent">
     <div class="eyebrow">武器 04 ・ Subagent</div>
-    <div class="title-l" style="max-width:24ch">AI 派的小弟 ──<br><em style="color:var(--accent); font-style:normal">是有成本的</em>。</div>
-    <div class="body" style="margin-top:1rem; text-align:center; max-width:54ch">
-      你看到 <code>Calling Explore subagent</code> 那行字 ──<br>
-      就是 AI 自動派工，<em style="color:var(--accent); font-style:normal">背景燒 Token</em>。
+    <div class="bigcmd" style="font-size:4.5rem">叫小弟 ・ 怎麼叫</div>
+    <div class="body" style="margin-top:0.8rem; text-align:center; max-width:58ch">
+      Subagent ＝ AI 在背景<em style="color:var(--accent); font-style:normal">派出去的小弟</em>。<br>
+      你不講它也會派 ── <strong style="color:var(--ink); font-weight:400">主動派、會更省</strong>。
     </div>
-    <div class="triple" style="margin-top:1.5rem">
-      <div class="cell">
-        <div class="cell-tag">三劍客</div>
-        <div class="cell-title">Explore</div>
-        <div class="cell-body">搜全專案<br>的小弟</div>
+    <div class="skill-steps" style="margin-top:1.5rem; grid-template-columns:1fr 1fr">
+      <div class="step">
+        <div class="step-num">做法 01 ・ 你<em style="color:var(--accent); font-style:normal">主動講</em></div>
+        <div class="step-title">叫小弟去查</div>
+        <code class="step-cmd">用 Explore subagent 找出專案裡<br>所有提到「會議」的檔案</code>
+        <div class="step-body">
+          講 <em style="color:var(--accent); font-style:normal">"用 Explore subagent"</em><br>
+          AI 就會派 ── 你會看到<br>
+          <code style="font-size:0.82rem">⏺ Explore subagent</code> 跑出來。<br><br>
+          <span style="color:var(--ink-faint); font-size:0.92rem">主場對話<em style="color:var(--accent); font-style:normal">不會被髒掉</em>，<br>查完小弟把結果交給主場。</span>
+        </div>
       </div>
-      <div class="cell">
-        <div class="cell-tag">三劍客</div>
-        <div class="cell-title">Plan</div>
-        <div class="cell-body">列複雜計畫<br>的小弟</div>
-      </div>
-      <div class="cell">
-        <div class="cell-tag">三劍客</div>
-        <div class="cell-title">General</div>
-        <div class="cell-body">啥都做<br>的小弟</div>
+      <div class="step">
+        <div class="step-num">做法 02 ・ 規劃<em style="color:var(--accent); font-style:normal">大事</em></div>
+        <div class="step-title">叫小弟列計畫</div>
+        <code class="step-cmd">用 Plan subagent 幫我規劃<br>本週工作排程，分成三階段</code>
+        <div class="step-body">
+          複雜任務先丟給<br>
+          <em style="color:var(--accent); font-style:normal">Plan subagent</em> 列步驟，<br>
+          再回主場逐步執行。<br><br>
+          <span style="color:var(--ink-faint); font-size:0.92rem">主場 effort 開 low、<br>規劃才開 high ── <em style="color:var(--accent); font-style:normal">省一半 token</em>。</span>
+        </div>
       </div>
     </div>
-    <div class="body" style="margin-top:1.8rem; text-align:center; max-width:60ch">
-      省 Token 兩招 ──<br>
-      <strong style="color:var(--ink); font-weight:400">給檔案路徑明確</strong>（AI 不會去掃全專案）<br>
-      <strong style="color:var(--ink); font-weight:400">大任務拆小任務</strong>（小任務 × N 比大任務 effort high 更省）
+    <div class="body" style="margin-top:1.4rem; text-align:center; max-width:62ch; font-style:italic">
+      「主場是<em style="color:var(--accent); font-style:normal">客廳</em>、Subagent 是<em style="color:var(--accent); font-style:normal">廚房</em> ── 髒活留在廚房，客廳才乾淨。」
     </div>
   </section>
 
   <!-- P7：武器 5 Loop 思維 -->
   <section class="slide fade-up" data-chapter="武器 5　Loop 思維">
     <div class="eyebrow">武器 05 ・ Loop 思維</div>
-    <div class="title-l" style="max-width:22ch">Loop 不是工具，<br>是<em style="color:var(--accent); font-style:normal">講話的方式</em>。</div>
-    <div class="compare" style="margin-top:1.5rem">
+    <div class="bigcmd" style="font-size:5rem">/loop　・　/schedule</div>
+    <div class="body" style="margin-top:1rem; text-align:center; max-width:58ch">
+      Loop 不是工具、是<em style="color:var(--accent); font-style:normal">講話的方式</em> ── 內建指令只是把它<em style="color:var(--accent); font-style:normal">自動化</em>。
+    </div>
+    <div class="compare" style="margin-top:1.2rem">
       <div class="col">
         <div class="col-label">沒 Loop 思維</div>
         <div class="col-title" style="color:var(--ink-mute)">5 場 session</div>
