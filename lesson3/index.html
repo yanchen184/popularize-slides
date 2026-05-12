@@ -381,7 +381,7 @@
       <div class="step">
         <div class="step-num">STEP 02</div>
         <div class="step-title">打開一個來看</div>
-        <code class="step-cmd">cat SKILL.md</code>
+        <code class="step-cmd">cat ~/.claude/skills/*/SKILL.md | head -50</code>
         <div class="step-body">
           就是中文，<br>
           寫清楚做什麼、怎麼做。<br>
@@ -392,12 +392,11 @@
       <div class="step">
         <div class="step-num">STEP 03 ・ ⭐</div>
         <div class="step-title">現場建一個</div>
-        <code class="step-cmd">叫 AI 寫到 ~/.claude/skills/&lt;名字&gt;/</code>
+        <code class="step-cmd">請幫我建一個 Skill 叫 my-weekly，<br>功能是把我貼的內容整理成<br>1.本週完成 2.下週預計 3.卡關。<br>建到 ~/.claude/skills/my-weekly/SKILL.md</code>
         <div class="step-body">
-          取<em style="color:var(--accent); font-style:normal">你自己的名字</em>。<br>
-          5 分鐘設定、<br>
-          以後 <code style="font-size:0.85rem">/&lt;名字&gt;</code> 一鍵跑。<br>
-          記得 reload 才認得。
+          <em style="color:var(--accent); font-style:normal">複製整段</em> 貼進 Claude Code。<br>
+          名字換成<em style="color:var(--accent); font-style:normal">你自己取的</em>。<br>
+          AI 寫完 → 退出 → 重開 → 打 <code style="font-size:0.85rem">/my-weekly</code>。
         </div>
       </div>
     </div>
@@ -509,22 +508,20 @@
       <div class="step">
         <div class="step-num">做法 01 ・ 你<em style="color:var(--accent); font-style:normal">主動講</em></div>
         <div class="step-title">叫小弟去查</div>
-        <code class="step-cmd">用 Explore subagent 找出專案裡<br>所有提到「會議」的檔案</code>
+        <code class="step-cmd">用 Explore subagent 找一下<br>我桌面 Desktop 資料夾裡<br>有沒有提到「履歷」的檔案</code>
         <div class="step-body">
-          講 <em style="color:var(--accent); font-style:normal">"用 Explore subagent"</em><br>
-          AI 就會派 ── 你會看到<br>
-          <code style="font-size:0.82rem">⏺ Explore subagent</code> 跑出來。<br><br>
+          <em style="color:var(--accent); font-style:normal">複製整段</em> 貼進去。<br>
+          會看到 <code style="font-size:0.82rem">⏺ Explore subagent</code> 跑出來。<br><br>
           <span style="color:var(--ink-faint); font-size:0.92rem">主場對話<em style="color:var(--accent); font-style:normal">不會被髒掉</em>，<br>查完小弟把結果交給主場。</span>
         </div>
       </div>
       <div class="step">
         <div class="step-num">做法 02 ・ 規劃<em style="color:var(--accent); font-style:normal">大事</em></div>
         <div class="step-title">叫小弟列計畫</div>
-        <code class="step-cmd">用 Plan subagent 幫我規劃<br>本週工作排程，分成三階段</code>
+        <code class="step-cmd">用 Plan subagent 幫我規劃<br>下週要辦一場 30 人讀書會，<br>分成三階段給我</code>
         <div class="step-body">
-          複雜任務先丟給<br>
-          <em style="color:var(--accent); font-style:normal">Plan subagent</em> 列步驟，<br>
-          再回主場逐步執行。<br><br>
+          <em style="color:var(--accent); font-style:normal">複製整段</em> 貼進去 ──<br>
+          不用任何檔案、現場立刻跑。<br><br>
           <span style="color:var(--ink-faint); font-size:0.92rem">主場 effort 開 low、<br>規劃才開 high ── <em style="color:var(--accent); font-style:normal">省一半 token</em>。</span>
         </div>
       </div>
@@ -544,29 +541,33 @@
     <div class="compare" style="margin-top:1.2rem">
       <div class="col">
         <div class="col-label">沒 Loop 思維</div>
-        <div class="col-title" style="color:var(--ink-mute)">5 場 session</div>
-        <div class="col-body">
-          「幫我摘要 a.txt」<br>
-          「幫我摘要 b.txt」<br>
-          「幫我摘要 c.txt」<br>……<br><br>
-          <em style="color:var(--warn); font-style:normal">每次 AI 都重讀 CLAUDE.md ──<br>5 倍啟動成本。</em>
+        <div class="col-title" style="color:var(--ink-mute)">問 5 次</div>
+        <div class="col-body" style="font-size:1.05rem">
+          「幫我用正式口氣改寫」<br>
+          「幫我用輕鬆口氣改寫」<br>
+          「幫我用道歉口氣改寫」<br>……<br><br>
+          <em style="color:var(--warn); font-style:normal">每次都重新解釋情境 ──<br>5 倍啟動成本。</em>
         </div>
       </div>
       <div class="vline"></div>
       <div class="col accent">
-        <div class="col-label">有 Loop 思維</div>
+        <div class="col-label">有 Loop 思維 ・ 現場可貼</div>
         <div class="col-title">1 句話</div>
-        <div class="col-body">
-          「請對目前資料夾的<br>
-          <em style="color:var(--accent); font-style:normal">每個 .txt 各做一次</em> ──<br>
-          產 30 字摘要、<br>
-          彙整成 markdown 表格」<br><br>
-          <em style="color:var(--accent); font-style:normal">啟動成本固定，<br>任務塞越多越划算。</em>
+        <div class="col-body" style="font-size:1.02rem">
+          「請用 <em style="color:var(--accent); font-style:normal">5 種不同口氣</em><br>
+          (正式 / 輕鬆 / 道歉 / 興奮 / 冷淡)<br>
+          <em style="color:var(--accent); font-style:normal">各改寫一次</em> 這句:<br>
+          『今天會議延後一小時』」<br><br>
+          <span style="color:var(--ink-faint); font-size:0.92rem">純文字、現場立刻跑。</span>
         </div>
       </div>
     </div>
-    <div class="body" style="margin-top:1.8rem; text-align:center; max-width:60ch; font-style:italic">
-      「Skill 教你<em style="color:var(--accent); font-style:normal">不重打</em>、<br>Loop 教你<em style="color:var(--accent); font-style:normal">不重啟</em>。」
+    <div class="body" style="margin-top:1.2rem; text-align:center; max-width:62ch; font-size:1.05rem">
+      <code>/loop</code> 進階做法 ── 「<em style="color:var(--accent); font-style:normal">每 30 分鐘提醒我喝水一次</em>」(自動排程)<br>
+      <code>/schedule</code> ── 「<em style="color:var(--accent); font-style:normal">明天早上 9 點提醒我交報告</em>」(單次排程)
+    </div>
+    <div class="body" style="margin-top:0.8rem; text-align:center; max-width:60ch; font-style:italic">
+      「Skill 教你<em style="color:var(--accent); font-style:normal">不重打</em>、Loop 教你<em style="color:var(--accent); font-style:normal">不重啟</em>。」
     </div>
   </section>
 
@@ -581,39 +582,40 @@
       <div class="cell">
         <div class="cell-mark ok">─</div>
         <div class="cell-tag">時機 1 ・ SessionStart</div>
-        <div class="cell-title">開場自動播報</div>
-        <div class="cell-body" style="font-size:0.95rem">
-          「打開 Claude Code 就<br>
-          <em style="color:var(--accent); font-style:normal">先念昨天的 TODO</em> 給我聽」<br><br>
-          <code style="font-size:0.78rem">cat ~/today.md</code>
+        <div class="cell-title">開場跳通知</div>
+        <div class="cell-body" style="font-size:0.92rem">
+          打開 Claude Code 就<br>
+          <em style="color:var(--accent); font-style:normal">桌面跳「歡迎回來」</em>。<br><br>
+          <code style="font-size:0.74rem">osascript -e<br>'display notification<br>"歡迎回來"'</code>
         </div>
       </div>
       <div class="cell">
         <div class="cell-mark warn">─</div>
-        <div class="cell-tag">時機 2 ・ PostToolUse</div>
-        <div class="cell-title">改檔後自動跑</div>
-        <div class="cell-body" style="font-size:0.95rem">
-          「AI 一改 .ts 檔，<br>
-          <em style="color:var(--accent); font-style:normal">自動跑 prettier 格式化</em>」<br><br>
-          <code style="font-size:0.78rem">npx prettier --write $FILE</code>
+        <div class="cell-tag">時機 2 ・ PreToolUse</div>
+        <div class="cell-title">改檔前自動備份</div>
+        <div class="cell-body" style="font-size:0.92rem">
+          AI 要改任何檔之前<br>
+          <em style="color:var(--accent); font-style:normal">先複製一份到 /tmp</em>。<br><br>
+          <code style="font-size:0.74rem">cp $FILE<br>/tmp/backup-$(date +%s)</code>
         </div>
       </div>
       <div class="cell">
         <div class="cell-mark no">─</div>
         <div class="cell-tag">時機 3 ・ Stop</div>
         <div class="cell-title">講完自動通知</div>
-        <div class="cell-body" style="font-size:0.95rem">
-          「AI 講完，<br>
-          <em style="color:var(--accent); font-style:normal">手機跳 LINE 通知</em>」<br><br>
-          <code style="font-size:0.78rem">curl LINE_NOTIFY_API</code>
+        <div class="cell-body" style="font-size:0.92rem">
+          AI 講完瞬間<br>
+          <em style="color:var(--accent); font-style:normal">桌面跳通知</em> ── 不用一直盯。<br><br>
+          <code style="font-size:0.74rem">osascript -e<br>'display notification<br>"AI 講完了"'</code>
         </div>
       </div>
     </div>
-    <div class="body" style="margin-top:1.2rem; text-align:center; max-width:64ch">
-      <strong style="color:var(--ink); font-weight:400">怎麼裝</strong>：跟 AI 講「請幫我在 settings.json 加一個 Stop hook，AI 講完就跑 <code>terminal-notifier</code> 跳通知」── <em style="color:var(--accent); font-style:normal">你不用會寫 JSON</em>。
+    <div class="body" style="margin-top:1rem; text-align:center; max-width:68ch; font-size:1.05rem">
+      <strong style="color:var(--ink); font-weight:400">學生現場貼這句</strong>：<br>
+      <em style="color:var(--accent); font-style:normal">「請幫我在 ~/.claude/settings.json 加一個 Stop hook，內容是 <code style="font-size:0.85rem">osascript -e 'display notification "AI 講完了" with title "Claude"'</code>」</em>
     </div>
-    <div class="body" style="margin-top:0.8rem; text-align:center; max-width:60ch; font-style:italic; font-size:1.15rem">
-      「Skill 是你叫 AI 重複做、Hook 是 <em style="color:var(--accent); font-style:normal">AI 自己叫腳本重複做</em>。」
+    <div class="body" style="margin-top:0.6rem; text-align:center; max-width:64ch; font-style:italic; font-size:1.05rem">
+      「Hook 是 <em style="color:var(--accent); font-style:normal">AI 自己叫腳本重複做</em> ── 你不用會寫 JSON，叫 AI 幫你加。」
     </div>
   </section>
 
