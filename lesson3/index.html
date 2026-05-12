@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>AI Claude Code 概論初級班 ・ 第三堂 ・ 經濟學</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Noto+Sans+TC:wght@300;400;500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ==================== 設計系統（沿用第一/第二堂） ==================== */
+  :root {
+    --bg:           #0E0E10;
+    --bg-soft:      #15151A;
+    --line:         #2A2A30;
+    --line-soft:    #1F1F25;
+    --ink:          #F4F0E8;
+    --ink-mute:     #8A8A93;
+    --ink-faint:    #4A4A52;
+    --accent:       #D4A574;
+    --accent-soft:  #B8946A;
+    --warn:         #C97B7B;
+    --safe:         #7BA88E;
+
+    --serif:  'Cormorant Garamond', 'Noto Serif TC', Georgia, serif;
+    --sans:   'Inter', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono:   'SF Mono', 'JetBrains Mono', Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .deck { position: relative; width: 100vw; height: 100vh; }
+
+  .slide {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem 6rem;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .slide.active { display: flex; opacity: 1; }
+
+  .slide.fade-up > * {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .slide.active.fade-up > * {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .slide.active.fade-up > *:nth-child(1) { transition-delay: 0.1s; }
+  .slide.active.fade-up > *:nth-child(2) { transition-delay: 0.3s; }
+  .slide.active.fade-up > *:nth-child(3) { transition-delay: 0.5s; }
+  .slide.active.fade-up > *:nth-child(4) { transition-delay: 0.7s; }
+  .slide.active.fade-up > *:nth-child(5) { transition-delay: 0.9s; }
+
+  /* ==================== 排版 ==================== */
+  .eyebrow {
+    font-size: 0.78rem;
+    font-weight: 400;
+    letter-spacing: 0.4em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+  .title-xl { font-family: var(--serif); font-weight: 300; font-size: 6.5rem; line-height: 1.05; }
+  .title-l  { font-family: var(--serif); font-weight: 300; font-size: 4.2rem; line-height: 1.15; }
+  .title-m  { font-family: var(--sans);  font-weight: 300; font-size: 2.8rem; line-height: 1.3; }
+  .body     { font-family: var(--sans);  font-weight: 300; font-size: 1.4rem; line-height: 1.75; color: var(--ink-mute); max-width: 60ch; }
+  .body-l   { font-family: var(--sans);  font-weight: 300; font-size: 1.7rem; line-height: 1.7;  color: var(--ink); }
+  .divider  { width: 60px; height: 1px; background: var(--accent); margin: 2rem 0; }
+  .divider.center { margin: 2rem auto; }
+
+  /* ==================== 頁碼 + 章節指示 ==================== */
+  .pagenum {
+    position: fixed; bottom: 2rem; right: 2.5rem;
+    font-family: var(--serif); font-size: 0.95rem; font-weight: 300;
+    color: var(--ink-faint); letter-spacing: 0.15em; z-index: 100;
+  }
+  .pagenum span:first-child { color: var(--accent); }
+  .chapter {
+    position: fixed; bottom: 2rem; left: 2.5rem;
+    font-size: 0.7rem; font-weight: 500; letter-spacing: 0.4em;
+    color: var(--ink-faint); text-transform: uppercase; z-index: 100;
+  }
+  .progress {
+    position: fixed; top: 0; left: 0;
+    height: 2px; background: var(--accent);
+    transition: width 0.3s ease; z-index: 100;
+  }
+
+  /* ==================== 對比表 ==================== */
+  .compare {
+    display: grid; grid-template-columns: 1fr 1px 1fr;
+    width: 100%; max-width: 1100px; margin-top: 2rem;
+  }
+  .compare > .col { padding: 0 3rem; }
+  .compare > .vline { background: var(--line); }
+  .compare .col-label { font-size: 0.75rem; letter-spacing: 0.4em; color: var(--ink-faint); text-transform: uppercase; margin-bottom: 1.5rem; }
+  .compare .col-title { font-family: var(--serif); font-size: 2rem; font-weight: 300; margin-bottom: 1.5rem; color: var(--ink); }
+  .compare .col-body { font-weight: 300; font-size: 1.2rem; line-height: 1.85; color: var(--ink-mute); }
+  .compare .col.accent .col-title { color: var(--accent); }
+
+  /* ==================== 三欄資料分級 ==================== */
+  .triple {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    width: 100%; max-width: 1200px; margin-top: 2.5rem;
+  }
+  .triple .cell { padding: 2rem 1.8rem; border-right: 1px solid var(--line-soft); }
+  .triple .cell:last-child { border-right: none; }
+  .triple .cell-mark { font-family: var(--serif); font-size: 2.2rem; font-weight: 300; margin-bottom: 0.8rem; }
+  .triple .cell-mark.ok   { color: var(--safe); }
+  .triple .cell-mark.warn { color: var(--accent); }
+  .triple .cell-mark.no   { color: var(--warn); }
+  .triple .cell-title { font-size: 1rem; font-weight: 500; letter-spacing: 0.2em; color: var(--ink); margin-bottom: 1rem; text-transform: uppercase; }
+  .triple .cell-body { font-size: 1.02rem; font-weight: 300; line-height: 1.8; color: var(--ink-mute); }
+  .triple .cell-tag { font-size: 0.75rem; letter-spacing: 0.3em; color: var(--ink-faint); text-transform: uppercase; margin-bottom: 0.6rem; }
+
+  /* ==================== 標題頁 ==================== */
+  .title-page { text-align: center; }
+  .title-page .meta-top {
+    position: absolute; top: 4rem; left: 4rem; right: 4rem;
+    display: flex; justify-content: space-between;
+    font-size: 0.78rem; letter-spacing: 0.4em; color: var(--ink-faint); text-transform: uppercase;
+  }
+  .title-page .main { font-family: var(--serif); font-weight: 300; font-size: 7rem; line-height: 1; }
+  .title-page .sub { margin-top: 2rem; font-weight: 300; font-size: 1.6rem; color: var(--ink-mute); letter-spacing: 0.05em; }
+  .title-page .meta-bottom {
+    position: absolute; bottom: 4rem; left: 4rem; right: 4rem;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    font-size: 0.78rem; letter-spacing: 0.4em; color: var(--ink-faint); text-transform: uppercase;
+  }
+
+  /* ==================== 程式碼 ==================== */
+  code, .mono {
+    font-family: var(--mono); font-size: 0.95em;
+    background: var(--bg-soft); padding: 0.15em 0.5em;
+    border-radius: 3px; color: var(--accent);
+    border: 1px solid var(--line-soft);
+  }
+  pre.snippet {
+    font-family: var(--mono); font-size: 1rem; line-height: 1.7;
+    background: var(--bg-soft); border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    padding: 1.4rem 1.8rem; color: var(--ink); border-radius: 0;
+    text-align: left; max-width: 760px; overflow-x: auto;
+  }
+
+  /* ==================== 5 武器卡片（P2 總覽） ==================== */
+  .weapons {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    width: 100%; max-width: 1300px;
+    margin-top: 2.5rem;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .weapon {
+    padding: 2rem 1.4rem;
+    border-right: 1px solid var(--line-soft);
+    text-align: center;
+  }
+  .weapon:last-child { border-right: none; }
+  .weapon .w-num { font-family: var(--serif); font-size: 1rem; color: var(--accent); letter-spacing: 0.3em; margin-bottom: 0.8rem; }
+  .weapon .w-name { font-family: var(--serif); font-size: 1.9rem; font-weight: 300; color: var(--ink); margin-bottom: 0.8rem; line-height: 1.2; }
+  .weapon .w-tag { font-size: 0.9rem; color: var(--ink-mute); font-weight: 300; line-height: 1.6; }
+
+  /* ==================== Bigfade 大數字 ==================== */
+  .bigfade {
+    display: flex; align-items: center; justify-content: center;
+    gap: 5rem; margin: 2.5rem 0;
+  }
+  .bigfade .step { font-family: var(--serif); font-weight: 300; line-height: 1; text-align: center; }
+  .bigfade .step.tail { font-size: 6rem; color: var(--ink-mute); }
+  .bigfade .step.lead { font-size: 9rem; color: var(--accent); }
+  .bigfade .vsep { width: 1px; height: 7rem; background: var(--accent-soft); opacity: 0.6; }
+  .bigfade .step .unit { font-size: 1.3rem; color: var(--ink-mute); display: block; margin-top: 1rem; letter-spacing: 0.2em; }
+
+  /* ==================== 痛點三條 ==================== */
+  .pains {
+    display: flex; gap: 0;
+    width: 100%; max-width: 1100px;
+    margin-top: 1.5rem;
+  }
+  .pain {
+    flex: 1; padding: 1.5rem 1.8rem;
+    border-right: 1px solid var(--line-soft);
+    text-align: center;
+  }
+  .pain:last-child { border-right: none; }
+  .pain .p-icon { font-family: var(--serif); font-size: 2.4rem; color: var(--warn); margin-bottom: 0.6rem; }
+  .pain .p-text { font-size: 1.05rem; color: var(--ink); font-weight: 300; }
+
+  /* ==================== Skill 範例框（P3） ==================== */
+  .skill-demo {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0;
+    width: 100%; max-width: 1100px;
+    margin-top: 2rem;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .skill-demo > div {
+    padding: 1.6rem 2rem;
+    border-right: 1px solid var(--line-soft);
+  }
+  .skill-demo > div:last-child { border-right: none; }
+  .skill-demo .sd-label { font-size: 0.75rem; letter-spacing: 0.4em; color: var(--ink-faint); text-transform: uppercase; margin-bottom: 1rem; }
+  .skill-demo .sd-body { font-size: 1.05rem; color: var(--ink); font-weight: 300; line-height: 1.7; }
+  .skill-demo .sd-body .accent { color: var(--accent); }
+
+  /* ==================== Finale ==================== */
+  .finale { background: var(--bg); text-align: center; }
+  .finale .quote { font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 3.4rem; line-height: 1.5; color: var(--ink); max-width: 24ch; }
+
+  /* ==================== Hint ==================== */
+  .hint {
+    position: fixed; top: 1rem; left: 50%; transform: translateX(-50%);
+    font-size: 0.7rem; color: var(--ink-faint); letter-spacing: 0.3em;
+    z-index: 1000; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+  }
+  .hint.show { opacity: 1; }
+
+  @media print {
+    .pagenum, .chapter, .progress, .hint { display: none; }
+    .slide { display: flex !important; opacity: 1 !important; page-break-after: always; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<div class="chapter" id="chapter"></div>
+<div class="pagenum"><span id="pn">01</span> &nbsp;/&nbsp; <span id="pt">--</span></div>
+<div class="hint" id="hint">← →  切換　・　F  全螢幕　・　Home  回首頁</div>
+
+<div class="deck" id="deck">
+
+  <!-- ==================================================== -->
+  <!-- 第三堂｜Token 經濟學 ・ 8 頁                          -->
+  <!-- 1 標題 / 2 五武器總覽 / 3-7 五武器 / 8 加碼 Hooks      -->
+  <!-- ==================================================== -->
+
+  <!-- P1：標題頁 -->
+  <section class="slide title-page fade-up" data-chapter="">
+    <div class="meta-top">
+      <span>YC Studio</span>
+      <span>2026</span>
+    </div>
+    <div class="eyebrow">Lesson 03 ・ Economy</div>
+    <div class="main">經濟學</div>
+    <div class="sub">AI 的桌子 ── 怎麼省</div>
+    <div class="meta-bottom">
+      <span>AI 概論初級班</span>
+      <span>60 MIN</span>
+    </div>
+  </section>
+
+  <!-- P2：五武器總覽 + 三痛點 -->
+  <section class="slide fade-up" data-chapter="Part 1　Hook + 五武器">
+    <div class="eyebrow">今天要解的三件事</div>
+    <div class="title-l" style="max-width:24ch">額度爆。AI <em style="color:var(--accent); font-style:normal">忘事</em>。<br>回應變慢。</div>
+    <div class="pains">
+      <div class="pain">
+        <div class="p-icon">$</div>
+        <div class="p-text">Pro 額度<br>月中就爆</div>
+      </div>
+      <div class="pain">
+        <div class="p-icon">⌛</div>
+        <div class="p-text">AI 開始<br>重複問你</div>
+      </div>
+      <div class="pain">
+        <div class="p-icon">…</div>
+        <div class="p-text">一樣的問題<br>今天答得慢</div>
+      </div>
+    </div>
+    <div class="body" style="margin-top:1.5rem; text-align:center; max-width:50ch">
+      同一個原因 ── <em style="color:var(--accent); font-style:normal">Token</em>。<br>
+      今天給你 <strong style="color:var(--ink)">5 個武器</strong>，回家就能用。
+    </div>
+    <div class="weapons">
+      <div class="weapon">
+        <div class="w-num">01</div>
+        <div class="w-name">Skill</div>
+        <div class="w-tag">把每週重打的話<br>固化下來</div>
+      </div>
+      <div class="weapon">
+        <div class="w-num">02</div>
+        <div class="w-name">Model</div>
+        <div class="w-tag">用對大腦尺寸<br>別大材小用</div>
+      </div>
+      <div class="weapon">
+        <div class="w-num">03</div>
+        <div class="w-name">Clear<br>Compact</div>
+        <div class="w-tag">桌子滿了<br>怎麼辦</div>
+      </div>
+      <div class="weapon">
+        <div class="w-num">04</div>
+        <div class="w-name">Subagent</div>
+        <div class="w-tag">AI 派的小弟<br>也在燒 Token</div>
+      </div>
+      <div class="weapon">
+        <div class="w-num">05</div>
+        <div class="w-name">Loop<br>思維</div>
+        <div class="w-tag">同類任務<br>一次解</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- P3：武器 1 Skill -->
+  <section class="slide fade-up" data-chapter="武器 1　Skill">
+    <div class="eyebrow">武器 01 ・ Skill</div>
+    <div class="title-l" style="max-width:22ch">把每週重打的話<br><em style="color:var(--accent); font-style:normal">取你自己的名字</em>。</div>
+    <div class="skill-demo">
+      <div>
+        <div class="sd-label">沒有 Skill</div>
+        <div class="sd-body">
+          每次都打 80 字：<br>
+          「請讀資料夾的 .txt、<br>
+          每個產 30 字摘要、<br>
+          用 markdown 表格……」
+        </div>
+      </div>
+      <div>
+        <div class="sd-label">有 Skill ＝ 取個名字</div>
+        <div class="sd-body">
+          打一個 <span class="accent">/&lt;你的名字&gt;</span><br>
+          ── AI 自動跑完整規格。<br>
+          <br>
+          <span style="color:var(--ink-mute); font-size:0.95rem">就是把提示詞包起來。<br>沒有編譯，沒有黑魔法。</span>
+        </div>
+      </div>
+    </div>
+    <div class="body" style="margin-top:1.8rem; text-align:center; max-width:54ch">
+      現場 demo：<code>ls ~/.claude/skills/</code> → 打開一個 <code>SKILL.md</code> → 叫 AI 建一個你的。<br>
+      <em style="color:var(--accent); font-style:normal">5 分鐘設定，以後省的時間是無限</em>。
+    </div>
+  </section>
+
+  <!-- P4：武器 2 Model（三大腦） -->
+  <section class="slide fade-up" data-chapter="武器 2　Model">
+    <div class="eyebrow">武器 02 ・ Model</div>
+    <div class="title-l" style="max-width:22ch">別<em style="color:var(--accent); font-style:normal">大材小用</em>。</div>
+    <div class="triple">
+      <div class="cell">
+        <div class="cell-mark ok">─</div>
+        <div class="cell-tag">小腦袋</div>
+        <div class="cell-title">Haiku</div>
+        <div class="cell-body">
+          翻譯、轉格式、看摘要。<br>
+          <em style="color:var(--safe); font-style:normal">快、省</em>。
+        </div>
+      </div>
+      <div class="cell">
+        <div class="cell-mark warn">─</div>
+        <div class="cell-tag">中腦袋</div>
+        <div class="cell-title">Sonnet</div>
+        <div class="cell-body">
+          主力。Pro 預設。<br>
+          <em style="color:var(--accent); font-style:normal">日常都用它</em>。
+        </div>
+      </div>
+      <div class="cell">
+        <div class="cell-mark no">─</div>
+        <div class="cell-tag">大腦袋</div>
+        <div class="cell-title">Opus</div>
+        <div class="cell-body">
+          架構決策、複雜推理。<br>
+          <em style="color:var(--warn); font-style:normal">大事才開</em>。
+        </div>
+      </div>
+    </div>
+    <div class="body" style="margin-top:2rem; text-align:center; max-width:56ch; font-style:italic; color:var(--ink)">
+      「翻譯一段話，叫 Opus 來幹 ── 是浪費。<br>就像叫教授去倒垃圾。」
+    </div>
+  </section>
+
+  <!-- P5：武器 3 Clear / Compact -->
+  <section class="slide fade-up" data-chapter="武器 3　Clear / Compact">
+    <div class="eyebrow">武器 03 ・ Context Window</div>
+    <div class="title-l" style="max-width:22ch">桌子滿了 ──<br>清還是<em style="color:var(--accent); font-style:normal">壓縮</em>?</div>
+    <div class="compare" style="margin-top:1.5rem">
+      <div class="col">
+        <div class="col-label">／compact</div>
+        <div class="col-title">壓縮</div>
+        <div class="col-body">
+          AI 自己摘要前面、<br>
+          保留重點。<br><br>
+          <em style="color:var(--accent); font-style:normal">桌子騰空間，<br>但記憶還在</em>。<br><br>
+          <span style="color:var(--ink-faint); font-size:0.95rem">→ 還要接續同主題</span>
+        </div>
+      </div>
+      <div class="vline"></div>
+      <div class="col accent">
+        <div class="col-label">／clear</div>
+        <div class="col-title">重置</div>
+        <div class="col-body">
+          完全清空，從零開始。<br>
+          記憶歸零。<br><br>
+          <em style="color:var(--accent); font-style:normal">這個話題結束，<br>下一個無關話題開始</em>。<br><br>
+          <span style="color:var(--ink-faint); font-size:0.95rem">→ 切到全新主題</span>
+        </div>
+      </div>
+    </div>
+    <div class="body" style="margin-top:1.8rem; text-align:center; max-width:60ch; font-style:italic">
+      「桌子不清，你下一句話都在<em style="color:var(--accent); font-style:normal">背前面 4 個任務的歷史</em>。」
+    </div>
+  </section>
+
+  <!-- P6：武器 4 Subagent -->
+  <section class="slide fade-up" data-chapter="武器 4　Subagent">
+    <div class="eyebrow">武器 04 ・ Subagent</div>
+    <div class="title-l" style="max-width:24ch">AI 派的小弟 ──<br><em style="color:var(--accent); font-style:normal">是有成本的</em>。</div>
+    <div class="body" style="margin-top:1rem; text-align:center; max-width:54ch">
+      你看到 <code>Calling Explore subagent</code> 那行字 ──<br>
+      就是 AI 自動派工，<em style="color:var(--accent); font-style:normal">背景燒 Token</em>。
+    </div>
+    <div class="triple" style="margin-top:1.5rem">
+      <div class="cell">
+        <div class="cell-tag">三劍客</div>
+        <div class="cell-title">Explore</div>
+        <div class="cell-body">搜全專案<br>的小弟</div>
+      </div>
+      <div class="cell">
+        <div class="cell-tag">三劍客</div>
+        <div class="cell-title">Plan</div>
+        <div class="cell-body">列複雜計畫<br>的小弟</div>
+      </div>
+      <div class="cell">
+        <div class="cell-tag">三劍客</div>
+        <div class="cell-title">General</div>
+        <div class="cell-body">啥都做<br>的小弟</div>
+      </div>
+    </div>
+    <div class="body" style="margin-top:1.8rem; text-align:center; max-width:60ch">
+      省 Token 兩招 ──<br>
+      <strong style="color:var(--ink); font-weight:400">給檔案路徑明確</strong>（AI 不會去掃全專案）<br>
+      <strong style="color:var(--ink); font-weight:400">大任務拆小任務</strong>（小任務 × N 比大任務 effort high 更省）
+    </div>
+  </section>
+
+  <!-- P7：武器 5 Loop 思維 -->
+  <section class="slide fade-up" data-chapter="武器 5　Loop 思維">
+    <div class="eyebrow">武器 05 ・ Loop 思維</div>
+    <div class="title-l" style="max-width:22ch">Loop 不是工具，<br>是<em style="color:var(--accent); font-style:normal">講話的方式</em>。</div>
+    <div class="compare" style="margin-top:1.5rem">
+      <div class="col">
+        <div class="col-label">沒 Loop 思維</div>
+        <div class="col-title" style="color:var(--ink-mute)">5 場 session</div>
+        <div class="col-body">
+          「幫我摘要 a.txt」<br>
+          「幫我摘要 b.txt」<br>
+          「幫我摘要 c.txt」<br>……<br><br>
+          <em style="color:var(--warn); font-style:normal">每次 AI 都重讀 CLAUDE.md ──<br>5 倍啟動成本。</em>
+        </div>
+      </div>
+      <div class="vline"></div>
+      <div class="col accent">
+        <div class="col-label">有 Loop 思維</div>
+        <div class="col-title">1 句話</div>
+        <div class="col-body">
+          「請對目前資料夾的<br>
+          <em style="color:var(--accent); font-style:normal">每個 .txt 各做一次</em> ──<br>
+          產 30 字摘要、<br>
+          彙整成 markdown 表格」<br><br>
+          <em style="color:var(--accent); font-style:normal">啟動成本固定，<br>任務塞越多越划算。</em>
+        </div>
+      </div>
+    </div>
+    <div class="body" style="margin-top:1.8rem; text-align:center; max-width:60ch; font-style:italic">
+      「Skill 教你<em style="color:var(--accent); font-style:normal">不重打</em>、<br>Loop 教你<em style="color:var(--accent); font-style:normal">不重啟</em>。」
+    </div>
+  </section>
+
+  <!-- P8：加碼 ── Claude Code Hooks -->
+  <section class="slide fade-up" data-chapter="加碼 ・ Hooks">
+    <div class="eyebrow">Bonus ・ 不是 5 武器，是彩蛋</div>
+    <div class="title-l" style="max-width:24ch">你不講，<br>它<em style="color:var(--accent); font-style:normal">自己跑</em>。</div>
+    <div class="body" style="margin-top:0.5rem; text-align:center; max-width:54ch">
+      Loop 是<em style="color:var(--accent); font-style:normal">你叫</em> AI 重複做。<br>
+      Hook 是 <em style="color:var(--accent); font-style:normal">AI 動的時候，系統自動跑腳本</em>。<br>
+      設定檔在 <code>~/.claude/settings.json</code>。
+    </div>
+    <div class="triple" style="margin-top:1.8rem">
+      <div class="cell">
+        <div class="cell-mark ok">─</div>
+        <div class="cell-tag">時機 1</div>
+        <div class="cell-title">SessionStart</div>
+        <div class="cell-body">
+          打開 Claude Code<br>
+          那一瞬間。<br><br>
+          <span style="color:var(--ink-faint); font-size:0.92rem">例：跑 session-start.sh，<br>每次都打招呼。</span>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="cell-mark warn">─</div>
+        <div class="cell-tag">時機 2</div>
+        <div class="cell-title">Pre / PostToolUse</div>
+        <div class="cell-body">
+          AI 動手前 / 後。<br><br>
+          <span style="color:var(--ink-faint); font-size:0.92rem">例：寫檔前自動備份、<br>跑指令後自動 lint。</span>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="cell-mark no">─</div>
+        <div class="cell-tag">時機 3</div>
+        <div class="cell-title">Stop</div>
+        <div class="cell-body">
+          AI 講完話那一瞬間。<br><br>
+          <span style="color:var(--ink-faint); font-size:0.92rem">例：notify、轉發 LINE、<br>自動存進記憶系統。</span>
+        </div>
+      </div>
+    </div>
+    <div class="body" style="margin-top:1.8rem; text-align:center; max-width:64ch; font-style:italic">
+      「Skill 是你叫 AI 重複做、<br>Hook 是 AI 自己叫腳本重複做 ── <em style="color:var(--accent); font-style:normal">一個你主動、一個系統自動</em>。」<br>
+      <span style="color:var(--ink-faint); font-style:normal; font-size:1rem">今天記得這個詞就好 ── 進階班再展開。</span>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  document.getElementById('pt').textContent = String(total).padStart(2, '0');
+  let cur = 0;
+
+  function go(i) {
+    if (i < 0 || i >= total) return;
+    slides[cur].classList.remove('active');
+    cur = i;
+    slides[cur].classList.add('active');
+    document.getElementById('pn').textContent = String(cur + 1).padStart(2, '0');
+    document.getElementById('chapter').textContent = slides[cur].dataset.chapter || '';
+    document.getElementById('progress').style.width = ((cur + 1) / total * 100) + '%';
+    if (location.hash !== '#' + (cur + 1)) {
+      history.replaceState(null, '', '#' + (cur + 1));
+    }
+  }
+
+  function next() { go(Math.min(cur + 1, total - 1)); }
+  function prev() { go(Math.max(cur - 1, 0)); }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); next(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+    else if (e.key === 'Home') go(0);
+    else if (e.key === 'End') go(total - 1);
+    else if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+    else if (e.key === '?' || e.key === 'h') {
+      const hint = document.getElementById('hint');
+      hint.classList.toggle('show');
+      setTimeout(() => hint.classList.remove('show'), 3000);
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (e.clientX > window.innerWidth / 2) next();
+    else prev();
+  });
+
+  const initial = parseInt(location.hash.replace('#', '')) || 1;
+  slides[0].classList.remove('active');
+  go(initial - 1);
+  setTimeout(() => {
+    document.getElementById('hint').classList.add('show');
+    setTimeout(() => document.getElementById('hint').classList.remove('show'), 3000);
+  }, 800);
+</script>
+
+</body>
+</html>
