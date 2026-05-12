@@ -1209,7 +1209,19 @@ stock-watcher 的 agent。
     }
   });
 
+  // 點擊換頁 ── 避開複製情境
+  let mouseDownX = 0, mouseDownY = 0;
+  document.addEventListener('mousedown', (e) => {
+    mouseDownX = e.clientX;
+    mouseDownY = e.clientY;
+  });
   document.addEventListener('click', (e) => {
+    const sel = window.getSelection();
+    if (sel && sel.toString().length > 0) return;
+    if (e.target.closest('code, pre, a')) return;
+    const dx = Math.abs(e.clientX - mouseDownX);
+    const dy = Math.abs(e.clientY - mouseDownY);
+    if (dx > 5 || dy > 5) return;
     if (e.clientX > window.innerWidth / 2) next();
     else prev();
   });
